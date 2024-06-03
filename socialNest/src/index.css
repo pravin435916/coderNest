@@ -4,5 +4,8 @@
 
 
 .primary-btn{
-    @apply px-4 cursor-pointer py-2 bg-black text-white rounded-full
+    @apply px-4 cursor-pointer py-2 bg-[#FF204E] text-white rounded-full
+  }
+.sec-btn{
+    @apply px-4 cursor-pointer py-2 bg-white text-[#FF204E] rounded-full
   }

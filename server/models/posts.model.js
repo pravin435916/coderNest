@@ -1,26 +1,17 @@
-// import mongoose from "mongoose";
-// import bcrypt from 'bcrypt'
-// const userSchema = new mongoose.Schema({
-//   head: {
-//     type: String,
-//     required: true
-//   },
-//   email: {
-//     type: String,
-//     required: true,
-//     unique: true
-//   },
-//   password: {
-//     type: String,
-//     required: true
-//   }
-// },{timestamps:true});
+import mongoose from "mongoose";
+const postSchema = new mongoose.Schema({
+  content : {
+    type: String,
+    required: true
+  },
+  createdAt:String,
+  imageUrl:String,
+  createdBy:{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:'User'
+  },
+  likes:[{type:mongoose.Schema.Types.ObjectId,ref:'User'}]
+},{timestamps:true});
 
-// userSchema.pre('save', async function(next) {
-//   const salt = await bcrypt.genSalt(10);
-//   this.password = await bcrypt.hash(this.password, salt);
-//   next();
-// });
-
-// const User = mongoose.model('User', userSchema);
-// export default User;
+const Post = mongoose.model('Post', postSchema);
+export default Post;

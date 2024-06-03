@@ -1,43 +1,59 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-
-export const Home = () => {
+import React, { useContext, useState } from 'react'
+import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast';
+import { LuSend } from "react-icons/lu";
+import { Banner } from './Banner';
+import { FaVideo } from "react-icons/fa";
+import { CiImageOn } from "react-icons/ci";
+import { UserContext } from '../context/UserProvider';
+import { Posts } from './Posts';
+export const Home = () => {   
+    const user = useContext(UserContext);
+    const [inputText,setInputText] = useState('')
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+          const res = await axios.post('http://localhost:5000/api/post/create', {
+            content:inputText,
+            createdAt:Date.now().toString(),
+            createdBy:user._id
+          });
+          console.log(res.data);
+          toast.success('published successfully');
+          setInputText('');
+        } catch (error) {
+          toast.error(error.response?.data?.message || 'An error occurred');
+          console.error(error.response?.data?.message || 'An error occurred');
+        }
+      };
     return (
-        <div className="w-[50%] flex  items-center flex-col bg-gray-100 p-4 flex-1 overflow-y-auto">
-            <div className='w-[90%] bg-blue-300 rounded-3xl shadow-xl h-52 p-4 flex gap-8'>
-                <img className='w-36 h-36 bg-cover' src="/assets/elephant.png" alt="ele" />
-                <div className='flex flex-col gap-4 items-start'>
-                    <span className='font-bold text-3xl'>Welcome to SocialNest</span>
-                    <span>Join Community,create and share your thoughts</span>
-                    <Link to={'/login'}><span className='primary-btn'>Get Started</span></Link>
+        <div className="w-full sm:w-[50%] flex flex-col  p-4 sm:flex-1 overflow-y-auto">
+           <Banner/>
+           {
+            user &&
+            <div className='w-full flex flex-col bg-gray-100 py-2 px-6 my-4 rounded-3xl'>
+                <span className='font-bold'>Create Post</span>
+                    <textarea value={inputText} onChange={(e)=> setInputText(e.target.value)} className='w-full p-2 rounded-2xl h-20 outline-none border-none' placeholder='whats new ?'/>
+                <div className='flex items-center p-2 mt-2'>
+                    <div className='flex gap-4'>
+                        <div className='flex gap-1 items-center'>
+                            <span><CiImageOn /></span>
+                            <span>image</span>
+                        </div>
+                        <div className='flex gap-1 items-center'>
+                            <span><FaVideo /></span>
+                            <span>video</span>
+                        </div>
+                    </div>
+                    <button onClick={handleSubmit}  className='px-4 py-1 bg-[#FF204E] flex gap-1 items-center rounded-full'> 
+                        <span className='text-white'>Publish</span>
+                        <span className='text-white'><LuSend /></span>
+                    </button>
                 </div>
             </div>
-            <h1 className="text-3xl font-bold mb-6">Posts</h1>
-            {/* Example Posts */}
-            <div className="bg-white p-4 shadow mb-4">
-                <h2 className="text-2xl font-semibold mb-2">Post Title 1</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-            </div>
-            <div className="bg-white p-4 shadow mb-4">
-                <h2 className="text-2xl font-semibold mb-2">Post Title 1</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-            </div>
-            <div className="bg-white p-4 shadow mb-4">
-                <h2 className="text-2xl font-semibold mb-2">Post Title 1</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-            </div>
-            <div className="bg-white p-4 shadow mb-4">
-                <h2 className="text-2xl font-semibold mb-2">Post Title 1</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-            </div>
-            <div className="bg-white p-4 shadow mb-4">
-                <h2 className="text-2xl font-semibold mb-2">Post Title 2</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-            </div>
-            <div className="bg-white p-4 shadow mb-4">
-                <h2 className="text-2xl font-semibold mb-2">Post Title 3</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-            </div>
+            }
+            <Posts/>
+           
         </div>
     )
 }

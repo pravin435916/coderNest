@@ -6,7 +6,7 @@ import { Home } from './Home';
 import { SideBar } from './SideBar';
 const Hero= () => {
   return (
-    <div className="flex h-[90vh]">
+    <div className="flex flex-col sm:flex-row sm:h-[90vh]">
       <SlideBar/>
       <Home/>
       <SideBar/>

@@ -2,19 +2,20 @@ import express from 'express'
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt'
 import User from '../models/user.model.js';
+import Post from '../models/posts.model.js';
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'PRAV2004';
 
 // Signup route
 router.post('/signup', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name,image, email, password } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ message: 'Email already exists' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, password: hashedPassword });
+    const user = new User({ name,image, email, password: hashedPassword });
     await user.save();
 
     const token = jwt.sign({ userId: user._id }, 'PRAV2004', { expiresIn: '3600s' });
@@ -57,7 +58,17 @@ const verifyToken = (req, res, next) => {
     res.status(400).json({ message: 'Invalid Token' });
   }
 };
-
+router.get('/user-posts', verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const posts = await Post.find({ createdBy: userId });
+    if (!posts) return res.status(404).json({ message: 'No posts found' });
+    res.json({ posts });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
 router.get('/user-info', verifyToken, async (req, res) => {
   try {
     const userId = req.userId;

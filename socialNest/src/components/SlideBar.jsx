@@ -1,49 +1,74 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useContext, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { MdOutlineHome } from "react-icons/md";
 import { BsRocketTakeoff } from "react-icons/bs";
 import { PiCodesandboxLogo } from "react-icons/pi";
-import { IoSettingsOutline } from "react-icons/io5";
+import { IoExit, IoSettingsOutline } from "react-icons/io5";
 import { FaRegUser } from "react-icons/fa6";
+import { UserContext } from '../context/UserProvider';
+import toast from 'react-hot-toast';
+import { IoMenu, IoClose } from "react-icons/io5"; // Added menu and close icons
+
 export const SlideBar = () => {
+    const navigate = useNavigate();
+    const user = useContext(UserContext);
+    const [isOpen, setIsOpen] = useState(false);
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        toast.success('Logout successful');
+        navigate('/');
+    };
+
+    const toggleNavbar = () => {
+        setIsOpen(!isOpen);
+    };
+
     return (
-        <div className="w-[22%] flex flex-col justify-between my-10 items-center p-4">
-            <div className='flex flex-col items-start gap-8 p-4'>
+        <div className="w-96 sm:w-[22%] flex flex-col justify-between sm:my-10 items-center p-4">
+            <button onClick={toggleNavbar} className="sm:hidden text-4xl z-10 absolute left-0 top-20 ">
+                {isOpen ? <IoClose /> : <IoMenu />}
+            </button>
+            <div className={`flex-col items-start gap-8 absolute p-4 ${isOpen ? 'flex' : 'hidden '} sm:flex sm:bg-transparent bg-black `}>
                 <Link to='/'>
                     <div className='flex items-center gap-2 font-semibold text-xl'>
-                        <span><MdOutlineHome /></span>
+                        <span><MdOutlineHome className='text-2xl'/></span>
                         <span>Home</span>
                     </div>
                 </Link>
-                <Link to='/'>
+                <Link to='/community'>
                     <div className='flex items-center gap-2 font-semibold text-xl'>
-                        <span><BsRocketTakeoff /></span>
+                        <span><BsRocketTakeoff className='text-2xl'/></span>
                         <span>Community</span>
                     </div>
                 </Link>
-                <Link to='/'>
+                <Link to='/tools'>
                     <div className='flex items-center gap-2 font-semibold text-xl'>
-                        <span><PiCodesandboxLogo /></span>
+                        <span><PiCodesandboxLogo className='text-2xl'/></span>
                         <span>Tools</span>
                     </div>
                 </Link>
-                <Link to='/'>
+                <Link to='/settings'>
                     <div className='flex items-center gap-2 font-semibold text-xl'>
-                        <span><IoSettingsOutline /></span>
+                        <span><IoSettingsOutline className='text-2xl'/></span>
                         <span>Settings</span>
                     </div>
                 </Link>
-                <Link to='/'>
+                <Link to='/profile'>
                     <div className='flex items-center gap-2 font-semibold text-xl'>
-                        <span><FaRegUser /></span>
+                        <span><FaRegUser className='text-2xl'/></span>
                         <span>User</span>
                     </div>
                 </Link>
-            </div>
-            <div className='flex justify-start items-start gap-2 font-semibold text-xl'>
-                <span><FaRegUser /></span>
-                <span>User</span>
+                {user && (
+                    <div onClick={handleLogout} className='flex cursor-pointer items-center mt-20 gap-2 font-semibold text-xl'>
+                        <span><IoExit className='text-2xl'/></span>
+                        <span>Logout</span>
+                    </div>
+                )}
             </div>
         </div>
-    )
-}
+    );
+};
+
+export default SlideBar;

@@ -1,18 +1,32 @@
 import React, { useState } from 'react';
 import './login.css'; // Import CSS file with styles
-
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 function Login() {
-    const [username, setUsername] = useState('');
+    const navigate = useNavigate()
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleUsernameChange = (e) => {
-        setUsername(e.target.value);
+    const handleEmailChange = (e) => {
+        setEmail(e.target.value);
     };
 
     const handlePasswordChange = (e) => {
         setPassword(e.target.value);
     };
-
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+          const res = await axios.post('http://localhost:5000/api/users/login', email,password);
+          console.log(res.data);
+          alert('logiin')
+          localStorage.setItem('token', res.data.token);
+          navigate('/')
+        } catch (error) {
+          console.error(error.response.data.message);
+          alert(error.response.data.message)
+        }
+      };
     const handleFocusUsername = () => {
         // Manipulate state to change styles for username focus
         setEyeBallStyles({ eyeball1: { top: '20px', left: '13px' }, eyeball2: { top: '20px', left: '8px' } });
@@ -31,15 +45,15 @@ function Login() {
     return (
         <div className='h-[85vh] w-full absolute flex justify-center items-center'>
             <div className='absolute p-8'>
-            <div className="login rounded-3xl bg-blue-300">
+            <form onSubmit={handleSubmit} className="login rounded-3xl bg-blue-300">
                 <i className="fa fa-user" aria-hidden="true">&nbsp;&nbsp;</i>
-                <input type="text" value={username} onChange={handleUsernameChange} className='p-2 rounded-xl' placeholder='username' onFocus={handleFocusUsername} />
+                <input type="email" value={email} onChange={handleEmailChange} className='p-2 rounded-xl' placeholder='username' onFocus={handleFocusUsername} />
                 <br /><br />
                 <i className="fa fa-unlock-alt" aria-hidden="true">&nbsp;&nbsp;</i>
                 <input type="password" value={password} onChange={handlePasswordChange} className='p-2 rounded-xl' placeholder='password' onFocus={handleFocusPassword} />
                 <br /><br />
-                <button type="button " className='primary-btn'>Login</button>
-            </div>
+                <button type='submit' className='primary-btn'>Login</button>
+            </form>
             <div className="backg">
                 <div className="panda">
                     <div className="earl"></div>
