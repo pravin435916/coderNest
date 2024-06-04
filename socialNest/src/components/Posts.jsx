@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import moment from 'moment';
 import { CiHeart } from 'react-icons/ci';
 import { FaRegCommentDots } from 'react-icons/fa6';
 import { Link } from 'react-router-dom';
+import { UserContext } from '../context/UserProvider';
 
 export const Posts = () => {
   const [posts, setPosts] = useState([]);
+  const user = useContext(UserContext);
 
   const getAllPosts = async () => {
     try {
@@ -16,10 +18,33 @@ export const Posts = () => {
       console.error('Error fetching posts:', error);
     }
   };
-
+  
   useEffect(() => {
     getAllPosts();
-  }, [posts]);
+  }, []);
+
+  const handleLike = async (postId) => {
+    try {
+      const updatedPosts = [...posts]; // Create a copy of the posts array
+      const postIndex = updatedPosts.findIndex(post => post._id === postId);
+      const isLiked = updatedPosts[postIndex].likes.includes(user._id);
+      
+      if (isLiked) {
+        // Unlike the post
+        updatedPosts[postIndex].likes = updatedPosts[postIndex].likes.filter(userId => userId !== user._id);
+      } else {
+        // Like the post
+        updatedPosts[postIndex].likes.push(user._id);
+      }
+
+      // Update the state with the modified posts array
+      setPosts(updatedPosts);
+      // Send the like/unlike request to the server
+      await axios.put(`http://localhost:5000/api/post/like/${postId}`, { userId: user._id, isLike: !isLiked });
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    }
+  };
 
   return (
     <div>
@@ -34,10 +59,10 @@ export const Posts = () => {
           <p className="mt-2">{post.content}</p>
           {post.imageUrl && <img className="w-full sm:w-[80%]  object-cover sm:px-20 mt-4 rounded-sm" src={post?.imageUrl} alt="" />}
           <div className="flex justify-between sm:justify-start gap-4 mt-4">
-            <div className="flex gap-2 items-center">
-              <span><CiHeart className="text-xl" /></span>
-              <span>22</span>
-              <span>Like</span>
+            <div className="flex gap-2 items-center" onClick={() => handleLike(post._id)}>
+              <span ><CiHeart  /></span>
+              <span>{post.likes.length}</span>
+              <span>Likes</span>
             </div>
             <div className="flex gap-2 items-center">
               <span><FaRegCommentDots className="text-xl" /></span>

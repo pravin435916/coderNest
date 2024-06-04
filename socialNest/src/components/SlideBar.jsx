@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MdOutlineHome } from "react-icons/md";
 import { BsRocketTakeoff } from "react-icons/bs";
@@ -11,6 +11,13 @@ import { IoMenu, IoClose } from "react-icons/io5"; // Added menu and close icons
 
 export const SlideBar = () => {
     const navigate = useNavigate();
+    const token = localStorage.getItem('token');
+
+    useEffect(() => {
+        if (!token) {
+            navigate('/')
+        }
+    }, [token])
     const user = useContext(UserContext);
     const [isOpen, setIsOpen] = useState(false);
 
@@ -32,37 +39,37 @@ export const SlideBar = () => {
             <div className={`flex-col items-start gap-8 absolute p-4 ${isOpen ? 'flex' : 'hidden '} sm:flex sm:bg-transparent bg-black `}>
                 <Link to='/'>
                     <div className='flex items-center gap-2 font-semibold text-xl'>
-                        <span><MdOutlineHome className='text-2xl'/></span>
+                        <span><MdOutlineHome className='text-2xl' /></span>
                         <span>Home</span>
                     </div>
                 </Link>
                 <Link to='/community'>
                     <div className='flex items-center gap-2 font-semibold text-xl'>
-                        <span><BsRocketTakeoff className='text-2xl'/></span>
+                        <span><BsRocketTakeoff className='text-2xl' /></span>
                         <span>Community</span>
                     </div>
                 </Link>
                 <Link to='/tools'>
                     <div className='flex items-center gap-2 font-semibold text-xl'>
-                        <span><PiCodesandboxLogo className='text-2xl'/></span>
+                        <span><PiCodesandboxLogo className='text-2xl' /></span>
                         <span>Tools</span>
                     </div>
                 </Link>
                 <Link to='/settings'>
                     <div className='flex items-center gap-2 font-semibold text-xl'>
-                        <span><IoSettingsOutline className='text-2xl'/></span>
+                        <span><IoSettingsOutline className='text-2xl' /></span>
                         <span>Settings</span>
                     </div>
                 </Link>
                 <Link to='/profile'>
                     <div className='flex items-center gap-2 font-semibold text-xl'>
-                        <span><FaRegUser className='text-2xl'/></span>
+                        <span><FaRegUser className='text-2xl' /></span>
                         <span>User</span>
                     </div>
                 </Link>
                 {user && (
                     <div onClick={handleLogout} className='flex cursor-pointer items-center mt-20 gap-2 font-semibold text-xl'>
-                        <span><IoExit className='text-2xl'/></span>
+                        <span><IoExit className='text-2xl' /></span>
                         <span>Logout</span>
                     </div>
                 )}
