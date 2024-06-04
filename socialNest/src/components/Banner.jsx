@@ -16,9 +16,9 @@ export const Banner = () => {
                         <img className='w-36 h-36 bg-cover' src="/assets/elephant.png" alt="ele" />
                         <div className='flex flex-col gap-2 items-start'>
                             {/* <span className='font-bold text-3xl'> {user ? <h1>Welcome, {user.name}</h1> : <p>Welcome user...</p>}</span> */}
-                            <span className='text-white font-bold text-3xl'>Welcome to SocialNest</span>
-                            <span className='text-gray-100'>Join Community,create and share your thoughts</span>
-                            <Link to={'/signin'}><span className='font-bold sec-btn'>Get Started</span></Link>
+                            <span className='text-white font-bold sm:text-3xl'>Welcome to SocialNest</span>
+                            <span className='text-gray-100 text-xs'>Join Community,create and share your thoughts</span>
+                            <Link to={'/signin'}><span className='sm:font-bold sec-btn'>Get Started</span></Link>
                         </div>
                     </div>)
             }

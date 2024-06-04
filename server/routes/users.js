@@ -61,9 +61,23 @@ const verifyToken = (req, res, next) => {
 router.get('/user-posts', verifyToken, async (req, res) => {
   try {
     const userId = req.userId;
-    const posts = await Post.find({ createdBy: userId });
+    const posts = await Post.find({ createdBy: userId }).sort({createdAt:-1})
     if (!posts) return res.status(404).json({ message: 'No posts found' });
     res.json({ posts });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+router.get('/userpro/:userId', async (req, res) => {
+  try {
+    const userId = req.userId;
+    if(!userId){
+      return res.json({message : `${userId} not found` })
+    }
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({ user });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server Error' });

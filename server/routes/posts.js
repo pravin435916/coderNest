@@ -1,8 +1,83 @@
-import express from 'express'
-import User from '../models/user.model.js';
+import express from 'express';
 import Post from '../models/posts.model.js';
+import { v2 as cloudinary } from 'cloudinary';
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 const router = express.Router();
 
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: 'db01bdoby',
+  api_key: '145426655655386',
+  api_secret: 'I2ILR0gpOxtgYDY2F75opJC9FTY',
+});
+
+// Convert import.meta.url to __dirname equivalent
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Ensure uploads directory exists
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
+// Configure Multer
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, UPLOADS_DIR);
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+  }
+});
+const upload = multer({ storage: storage });
+
+router.post('/create', upload.single('imageUrl'), async (req, res) => {
+  try {
+    const { content, createdAt, createdBy } = req.body;
+
+    // Check if an image file was uploaded (optional)
+    let imageUrl = '';
+    if (req.file && req.file.path) {
+      const uploadedFile = req.file.path;
+      const uploadResult = await cloudinary.uploader.upload(uploadedFile);
+      console.log('Upload successful:', uploadResult);
+      fs.unlinkSync(uploadedFile);  // Clean up the local file
+      imageUrl = uploadResult.secure_url;
+    }
+
+    const post = await Post.create({
+      content,
+      createdAt,
+      imageUrl,
+      createdBy
+    });
+     console.log(imageUrl)
+    res.json(post);
+  } catch (error) {
+    console.error('Error creating post:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+
+// Route for image upload
+// router.post('/testi', upload.single('imageUrl'), async (req, res) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({ message: 'No image uploaded' });
+//     }
+//     const uploadResult = await cloudinary.uploader.upload(req.file.path);
+//     console.log('Upload successful:', uploadResult);
+//     fs.unlinkSync(req.file.path);
+//     res.status(200).json({ imageUrl: uploadResult.secure_url });
+//   } catch (error) {
+//     console.error('Upload error:', error);
+//     res.status(500).json({ message: 'Image Upload Failed' });
+//   }
+// });
 
 //get posts
 router.get('/get' , async (req,res) => {
@@ -16,16 +91,6 @@ router.get('/get' , async (req,res) => {
      } catch (error) {
         res.status(500).json({msg : error});
      }
-}) 
-router.post('/create' , async (req,res) => {
-    try {
-        const { content, createdAt, imageUrl,createdBy } = req.body;
-        const post = await Post.create({content,createdAt,imageUrl,createdBy})
-        res.json(post);
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server Error' });
-      }
 }) 
 router.put('/like/:id' , async (req,res) => {
     try {
