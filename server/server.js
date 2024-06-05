@@ -3,8 +3,9 @@ import mongoose from 'mongoose';
 import userRoute from './routes/users.js';
 import postRoute from './routes/posts.js';
 import cors from 'cors'
-const mongoURI = 'mongodb://localhost:27017/socialNest';
-
+import * as dotenv from 'dotenv'
+dotenv.config()
+const mongoURI = process.env.MONGO_URL;
 // Connect to MongoDB
 mongoose.connect(mongoURI)
   .then(() => console.log('MongoDB connected'))

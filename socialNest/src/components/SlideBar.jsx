@@ -8,24 +8,13 @@ import { FaRegUser } from "react-icons/fa6";
 import { UserContext } from '../context/UserProvider';
 import toast from 'react-hot-toast';
 import { IoMenu, IoClose } from "react-icons/io5"; // Added menu and close icons
+import Logout from './Logout';
 
 export const SlideBar = () => {
     const navigate = useNavigate();
-    const token = localStorage.getItem('token');
 
-    useEffect(() => {
-        if (!token) {
-            navigate('/')
-        }
-    }, [token])
     const user = useContext(UserContext);
     const [isOpen, setIsOpen] = useState(false);
-
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        toast.success('Logout successful');
-        navigate('/');
-    };
 
     const toggleNavbar = () => {
         setIsOpen(!isOpen);
@@ -68,9 +57,9 @@ export const SlideBar = () => {
                     </div>
                 </Link>
                 {user && (
-                    <div onClick={handleLogout} className='flex cursor-pointer items-center mt-20 gap-2 font-semibold text-xl'>
+                    <div  className='flex cursor-pointer items-center mt-20 gap-2 font-semibold text-xl'>
                         <span><IoExit className='text-2xl' /></span>
-                        <span>Logout</span>
+                         <Link to={'/logout'}>Logout</Link>
                     </div>
                 )}
             </div>

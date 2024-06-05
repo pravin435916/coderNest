@@ -6,7 +6,11 @@ import Signin from "./components/Signin";
 import Signup from "./components/Signup";
 import Profile from "./pages/Profile";
 import UserProfile from "./components/UserProfile";
+import Logout from "./components/Logout";
+import { useContext } from "react";
+import { UserContext } from "./context/UserProvider";
 export default function App() {
+  const user = useContext(UserContext);
   return (
     <>
       <BrowserRouter>
@@ -16,8 +20,15 @@ export default function App() {
           <Route path="/login" element={<Login />}></Route>
           <Route path="/signin" element={<Signin />}></Route>
           <Route path="/signup" element={<Signup />}></Route>
-          <Route path="/profile" element={<Profile />}></Route>
-          <Route path="/user/:userId" element={<UserProfile />}/>
+          {
+            user && (
+              <>
+              <Route path="/profile" element={<Profile />}></Route>
+              <Route path="/logout" element={<Logout />}></Route>
+              <Route path="/user/:userId" element={<UserProfile />}/>
+              </>
+            ) 
+          }
         </Routes>
       </BrowserRouter>
     </>

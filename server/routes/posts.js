@@ -4,15 +4,17 @@ import { v2 as cloudinary } from 'cloudinary';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
+import * as dotenv from 'dotenv'
+dotenv.config()
 import { fileURLToPath } from 'url';
 
 const router = express.Router();
 
 // Configure Cloudinary
 cloudinary.config({
-  cloud_name: 'db01bdoby',
-  api_key: '145426655655386',
-  api_secret: 'I2ILR0gpOxtgYDY2F75opJC9FTY',
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
+  api_secret: process.env.API_SECRET,
 });
 
 // Convert import.meta.url to __dirname equivalent

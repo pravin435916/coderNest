@@ -5,7 +5,6 @@ export const UserContext = createContext();
 
 const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-
   useEffect(() => {
     const fetchUserInfo = async () => {
       const token = localStorage.getItem('token');
@@ -24,7 +23,7 @@ const UserProvider = ({ children }) => {
     };
 
     fetchUserInfo();
-  }, []);
+  }, [user]);
 
   return (
     <UserContext.Provider value={user}>

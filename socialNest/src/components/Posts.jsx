@@ -60,7 +60,7 @@ export const Posts = () => {
           {post.imageUrl && <img className="w-full sm:w-[80%]  object-cover sm:px-20 mt-4 rounded-sm" src={post?.imageUrl} alt="" />}
           <div className="flex justify-between sm:justify-start gap-4 mt-4">
             <div className="flex gap-2 items-center" onClick={() => handleLike(post._id)}>
-              <span ><CiHeart  /></span>
+              <span><CiHeart  /></span>
               <span>{post.likes.length}</span>
               <span>Likes</span>
             </div>
