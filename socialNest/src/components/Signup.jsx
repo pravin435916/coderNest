@@ -40,12 +40,19 @@ const Signup = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className='flex flex-col gap-3'>
-      <input type="text" value={name} placeholder="Name" onChange={handleNameChange} />
-      <input type="email" value={email} placeholder="Email" onChange={handleEmailChange} />
-      <input type="password" value={password} placeholder="Password" onChange={handlePasswordChange} />
-      <button type="submit">Signup</button>
-    </form>
+    <div className="h-[90vh] flex items-center justify-center bg-gray-50 py-12 px-4">
+      <div className="w-96 space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign up</h2>
+        </div>
+        <form onSubmit={handleSubmit} className='flex flex-col gap-4 mt-8'>
+          <input type="text" value={name} placeholder="Name" onChange={handleNameChange} className=" w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+          <input type="email" value={email} placeholder="Email" onChange={handleEmailChange} className=" w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+          <input type="password" value={password} placeholder="Password" onChange={handlePasswordChange} className=" w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+          <button type="submit" className=" w-full px-4 py-2 border border-lg bg-red-400 font-bold text-white">Sign up</button>
+        </form>
+      </div>
+    </div>
   );
 };
 

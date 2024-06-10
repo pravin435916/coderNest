@@ -8,8 +8,6 @@ import { FaRegUser } from "react-icons/fa6";
 import { UserContext } from '../context/UserProvider';
 import toast from 'react-hot-toast';
 import { IoMenu, IoClose } from "react-icons/io5"; // Added menu and close icons
-import Logout from './Logout';
-
 export const SlideBar = () => {
     const navigate = useNavigate();
 
@@ -21,7 +19,7 @@ export const SlideBar = () => {
     };
 
     return (
-        <div className="w-96 sm:w-[22%] flex flex-col justify-between sm:my-10 items-center p-4">
+        <div className="w-96 sm:w-[22%] flex flex-col justify-between sm:my-10 items-center p-4 abel-regular">
             <button onClick={toggleNavbar} className="sm:hidden text-4xl z-10 absolute left-0 top-20 ">
                 {isOpen ? <IoClose /> : <IoMenu />}
             </button>
@@ -29,31 +27,31 @@ export const SlideBar = () => {
                 <Link to='/'>
                     <div className='flex items-center gap-2 font-semibold text-xl'>
                         <span><MdOutlineHome className='text-2xl' /></span>
-                        <span>Home</span>
+                        <span className='abel-regular'>Home</span>
                     </div>
                 </Link>
                 <Link to='/community'>
                     <div className='flex items-center gap-2 font-semibold text-xl'>
                         <span><BsRocketTakeoff className='text-2xl' /></span>
-                        <span>Community</span>
+                        <span  className='abel-regular'>Community</span>
                     </div>
                 </Link>
                 <Link to='/tools'>
                     <div className='flex items-center gap-2 font-semibold text-xl'>
                         <span><PiCodesandboxLogo className='text-2xl' /></span>
-                        <span>Tools</span>
+                        <span  className='abel-regular'>Tools</span>
                     </div>
                 </Link>
                 <Link to='/settings'>
                     <div className='flex items-center gap-2 font-semibold text-xl'>
                         <span><IoSettingsOutline className='text-2xl' /></span>
-                        <span>Settings</span>
+                        <span  className='abel-regular'>Settings</span>
                     </div>
                 </Link>
                 <Link to='/profile'>
                     <div className='flex items-center gap-2 font-semibold text-xl'>
                         <span><FaRegUser className='text-2xl' /></span>
-                        <span>User</span>
+                        <span  className='abel-regular'>User</span>
                     </div>
                 </Link>
                 {user && (

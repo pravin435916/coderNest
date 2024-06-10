@@ -64,6 +64,69 @@ router.post('/create', upload.single('imageUrl'), async (req, res) => {
   }
 });
 
+//delete post 
+router.delete('/delete/:id', async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const post = await Post.findByIdAndDelete(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // If the post has an image, delete it from Cloudinary
+    if (post.imageUrl) {
+      const publicId = path.basename(post.imageUrl).split('.')[0];
+      await cloudinary.uploader.destroy(publicId);
+    }
+    res.json({ message: 'Post deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+ //edit post
+ router.put('/edit/:id', upload.single('imageUrl'), async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const { content, createdAt, createdBy } = req.body;
+
+    const updateData = {
+      content,
+      createdAt,
+      createdBy
+    };
+
+    // Check if an image file was uploaded
+    if (req.file && req.file.path) {
+      const uploadedFile = req.file.path;
+      const uploadResult = await cloudinary.uploader.upload(uploadedFile);
+      console.log('Upload successful:', uploadResult);
+      fs.unlinkSync(uploadedFile);  // Clean up the local file
+
+      // If the post already has an image, delete the old one from Cloudinary
+      const post = await Post.findById(postId);
+      if (post.imageUrl) {
+        const publicId = path.basename(post.imageUrl).split('.')[0];
+        await cloudinary.uploader.destroy(publicId);
+      }
+
+      updateData.imageUrl = uploadResult.secure_url;
+    }
+
+    const updatedPost = await Post.findByIdAndUpdate(postId, updateData, { new: true });
+
+    if (!updatedPost) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    res.json(updatedPost);
+  } catch (error) {
+    console.error('Error editing post:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
 
 // Route for image upload
 // router.post('/testi', upload.single('imageUrl'), async (req, res) => {

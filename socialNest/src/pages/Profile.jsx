@@ -26,7 +26,9 @@ const Profile = () => {
 
         fetchUserPosts();
     }, []);
-
+    const likesCount = () => {
+        return posts.reduce((sum, post) => sum + post.likes.length, 0);
+    };
     return (
         <div className=" p-8 bg-white rounded-lg shadow-md">
             <div className="flex flex-col items-center text-center">
@@ -34,17 +36,21 @@ const Profile = () => {
                 <h1 className="text-3xl font-semibold text-gray-800">Welcome, {user?.name}</h1>
                 <p className="mt-2 text-sm text-gray-600">{user?.email}</p>
                 <p className="mt-2 text-sm text-gray-600">{moment(user?.createdAt).format("MMMM Do YYYY")}</p>
+                <div className='flex gap-8 items-center'>
+                <span>{posts.length} Posts</span>
+                <span>{likesCount()} likes</span>
+                </div>
             </div>
             <hr className="my-4 border-t border-gray-300" />
             <h2 className="text-xl font-semibold text-gray-800 mb-2">Your Posts</h2>
-            <div className='flex gap-2 flex-wrap'>
+            <div className='flex gap-2 flex-wrap justify-center items-center'>
             {posts.length > 0 ? (
                 posts.map(post => (
-                    <div key={post._id} className="flex flex-col flex-wrap gap-2 bg-gray-100 rounded-md p-4 mb-4">
-                        <img className="w-96 mb-2 rounded" src={post?.imageUrl} alt="Post" />
+                    <div key={post._id} className="w-80 flex flex-col flex-wrap gap-4 bg-gray-100 rounded-md p-4 mb-4">
+                        <img className="w-full mb-2 rounded" src={post?.imageUrl} alt="Post" />
                         <div className="flex items-center">
-                           {/* {post.imageUrl && <img className="w-32 h-32 mr-2"  alt="User" />} */}
                             <h3 className="text-lg font-semibold text-gray-800">{post.content}</h3>
+                            <h3 className="text-lg font-semibold text-gray-800"> {post.likes.length}Likes</h3>
                         </div>
                         {/* Additional post details can be added here */}
                     </div>

@@ -7,6 +7,7 @@ import { FaVideo } from "react-icons/fa";
 import { CiImageOn } from "react-icons/ci";
 import { UserContext } from '../context/UserProvider';
 import { Posts } from './Posts';
+import { FaFire } from "react-icons/fa";
 export const Home = () => {
   const user = useContext(UserContext);
   const [inputText, setInputText] = useState('')
@@ -59,7 +60,7 @@ export const Home = () => {
           <textarea value={inputText} onChange={(e) => setInputText(e.target.value)} className='w-full p-2 rounded-2xl h-20 outline-none border-none' placeholder='whats new ?' />
           <div className='flex items-center sm:gap-4 gap-2 sm:p-2 mt-2'>
             {
-              imageFile ?   <span>{imageFile.name}</span> :
+              imageFile ?   <span className='w-24 overflow-hidden text-xs'>{imageFile.name}</span> :
             <div className='flex gap-1 items-center cursor-pointer relative'>
               <span><CiImageOn /></span>
               <span>image</span>
