@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import SkeletonComp from './Loader/SkeletonComp';
+import { backendApi } from '../Url';
 
 export const Posts = () => {
   const [posts, setPosts] = useState([]);
@@ -21,7 +22,7 @@ export const Posts = () => {
   const getAllPosts = async () => {
     try {
       setLoading(true)
-      const res = await axios.get('http://localhost:5000/api/post/get');
+      const res = await axios.get(`${backendApi}/api/post/get`);
       setPosts(res.data);
     } catch (error) {
       console.error('Error fetching posts:', error);

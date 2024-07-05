@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { backendApi } from '../Url';
 
 export const UserContext = createContext();
 
@@ -10,7 +11,7 @@ const UserProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const res = await axios.get('http://localhost:5000/api/users/user-info', {
+          const res = await axios.get(`${backendApi}/api/users/user-info`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },

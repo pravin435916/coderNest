@@ -3,6 +3,7 @@ import './login.css'; // Import CSS file with styles
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { backendApi } from '../Url';
 function Login() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
@@ -17,7 +18,7 @@ function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('http://localhost:5000/api/users/login', formData);
+            const res = await axios.post(`${backendApi}/api/users/login`, formData);
             console.log(res.data);
             toast.success('Login successfully');
             localStorage.setItem('token', res.data.token);

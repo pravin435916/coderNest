@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import { UserContext } from '../context/UserProvider';
 import moment from 'moment';
-
+import { backendApi } from '../Url';
 const Profile = () => {
     const user = useContext(UserContext);
     const [posts, setPosts] = useState([]);
@@ -12,7 +12,7 @@ const Profile = () => {
             const token = localStorage.getItem('token');
             if (token) {
                 try {
-                    const res = await axios.get('http://localhost:5000/api/users/user-posts', {
+                    const res = await axios.get(`${backendApi}/api/users/user-posts`, {
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },

@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import 'tailwindcss/tailwind.css';
+import { backendApi } from '../Url';
 
 const Signin = () => {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ const Signin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/users/login', formData);
+      const res = await axios.post(`${backendApi}/api/users/login`, formData);
       console.log(res.data);
       toast.success('Login successfully');
       localStorage.setItem('token', res.data.token);

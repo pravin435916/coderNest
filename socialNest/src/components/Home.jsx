@@ -8,6 +8,7 @@ import { CiImageOn } from "react-icons/ci";
 import { UserContext } from '../context/UserProvider';
 import { Posts } from './Posts';
 import { FaFire } from "react-icons/fa";
+import { backendApi } from '../Url';
 export const Home = () => {
   const user = useContext(UserContext);
   const [inputText, setInputText] = useState('')
@@ -34,7 +35,7 @@ export const Home = () => {
     formData.append('createdBy', user._id);
 
     try {
-      const res = await axios.post('http://localhost:5000/api/post/create', formData, {
+      const res = await axios.post(`${backendApi}/api/post/create`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data', // Set the content type header
         },

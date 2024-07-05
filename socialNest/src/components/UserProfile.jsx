@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link, useParams } from 'react-router-dom'; // Import useParams for route parameters
+import { backendApi } from '../Url';
 
 const UserProfile = () => {
   const { userId } = useParams(); // Extract userId from route parameter
@@ -10,7 +11,7 @@ const UserProfile = () => {
   useEffect(() => {
     const getUserInfo = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/userpro/${userId}`);
+        const response = await axios.get(`${backendApi}/api/userpro/${userId}`);
         setUser(response.data.user);
       } catch (error) {
         setError(error);

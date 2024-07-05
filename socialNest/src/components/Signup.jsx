@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { backendApi } from '../Url';
 
 const Signup = () => {
   const navigate = useNavigate()
@@ -24,7 +25,7 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/users/signup', {
+      const res = await axios.post(`${backendApi}/api/users/signup`, {
         name,
         email,
         password
