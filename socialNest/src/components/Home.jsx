@@ -21,10 +21,10 @@ export const Home = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // if (!imageFile) {
-    //   toast.error('Please select an image to upload');
-    //   return;
-    // }
+    if (!imageFile) {
+      toast.error('Please select an image to upload');
+      return;
+    }
     console.log(imageFile)
     setLoading(true)
 
