@@ -59,7 +59,7 @@ export const Posts = () => {
         isLike: !isLiked
       };
 
-      await axios.put(`http://localhost:5000/api/post/like/${postId}`, data);
+      await axios.put(`${backendApi}/api/post/like/${postId}`, data);
     } catch (error) {
       console.error('Error toggling like:', error);
     }
@@ -67,7 +67,7 @@ export const Posts = () => {
 
   const handleDelete = async (postId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/post/delete/${postId}`);
+      await axios.delete(`${backendApi}/api/post/delete/${postId}`);
       setPosts(posts.filter(post => post._id !== postId));
     } catch (error) {
       console.error('Error deleting post:', error);
@@ -89,7 +89,7 @@ export const Posts = () => {
         formData.append('imageUrl', editImage);
       }
 
-      const res = await axios.put(`http://localhost:5000/api/post/edit/${editingPostId}`, formData, {
+      const res = await axios.put(`${backendApi}/api/post/edit/${editingPostId}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
