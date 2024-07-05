@@ -33,7 +33,7 @@ export const Posts = () => {
 
   useEffect(() => {
     getAllPosts();
-  }, []);
+  }, [posts]);
 
   const checkIsLiked = (postLikes) => {
     return postLikes.some(item => item._id === user?._id);
