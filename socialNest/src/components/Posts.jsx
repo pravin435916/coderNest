@@ -12,12 +12,12 @@ import SkeletonComp from './Loader/SkeletonComp';
 import { backendApi } from '../Url';
 
 export const Posts = () => {
-  const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingPostId, setEditingPostId] = useState(null);
   const [editContent, setEditContent] = useState('');
   const [editImage, setEditImage] = useState(null);
   const user = useContext(UserContext);
+  const [posts, setPosts] = useState([]);
 
   const getAllPosts = async () => {
     try {
@@ -68,6 +68,7 @@ export const Posts = () => {
   const handleDelete = async (postId) => {
     try {
       await axios.delete(`${backendApi}/api/post/delete/${postId}`);
+      toast.success("Deleted Successfully!")
       setPosts(posts.filter(post => post._id !== postId));
     } catch (error) {
       console.error('Error deleting post:', error);
@@ -99,6 +100,7 @@ export const Posts = () => {
         post._id === res.data._id ? { ...res.data, createdBy: user } : post
       );
       toast.success('Edited successfully');
+      getAllPosts();
       setPosts(updatedPosts);
       setEditingPostId(null);
       setEditContent('');
@@ -124,11 +126,13 @@ export const Posts = () => {
         posts.map(post => (
           <div className="w-full flex flex-col bg-gray-100 rounded-md mb-4 p-4 abel-regular" key={post._id}>
             <div className="flex items-center gap-2">
-              <img className="w-8 h-8 rounded-full" src={post?.createdBy.image || 'https://github.com/shadcn.png'} alt="" />
-              <h3 className="font-bold">@{post?.createdBy.name}</h3>
+              <img className="w-8 h-8 rounded-full" 
+              src={'https://github.com/shadcn.png'} alt="" />
+              {/* src={post?.createdBy?.image || 'https://github.com/shadcn.png'} alt="" /> */}
+              <h3 className="font-bold">@{post?.createdBy?.name}</h3>
               <span className="text-xs">{moment(Number(post?.createdAt)).format('DD MMM | hh:mm A')}</span>
             </div>
-            {user && editingPostId === post._id ? (
+            {user && editingPostId === post?._id ? (
               <form onSubmit={handleEditSubmit} className="mt-2">
                 <textarea
                   className="w-full p-2 border rounded"
@@ -141,12 +145,12 @@ export const Posts = () => {
               </form>
             ) : (
               <>
-                <p className="mt-2">{post.content}</p>
-                {post.imageUrl && <img className="w-full sm:w-[80%] object-cover sm:px-20 mt-4 rounded-sm" src={post?.imageUrl} alt="" />}
+                <p className="mt-2">{post?.content}</p>
+                {post?.imageUrl && <img className="w-full sm:w-[80%] object-cover sm:px-20 mt-4 rounded-sm" src={post?.imageUrl} alt="" />}
                 <div className="flex justify-between sm:justify-start gap-4 mt-4">
-                  <div className="flex gap-1 items-center cursor-pointer" onClick={() => handleLike(post._id)}>
-                    <span>{!checkIsLiked(post.likes) ? <CiHeart /> : <FaHeart className='text-red-600' />}</span>
-                    <span>{post.likes.length}</span>
+                  <div className="flex gap-1 items-center cursor-pointer" onClick={() => handleLike(post?._id)}>
+                    <span>{!checkIsLiked(post?.likes) ? <CiHeart /> : <FaHeart className='text-red-600' />}</span>
+                    <span>{post?.likes?.length}</span>
                     <span>Likes</span>
                   </div>
                   <div className="flex gap-1 items-center">
@@ -154,7 +158,7 @@ export const Posts = () => {
                     <span>21</span>
                     <span>Comment</span>
                   </div>
-                  {user && post.createdBy._id === user._id && (
+                  {user && post?.createdBy?._id === user?._id && (
                     <div className="flex gap-1 items-center">
                       <span className="cursor-pointer" onClick={() => handleEdit(post)}><FaEdit className="text-blue-600" /></span>
                       <span className="cursor-pointer" onClick={() => handleDelete(post._id)}><FaTrash className="text-red-600" /></span>

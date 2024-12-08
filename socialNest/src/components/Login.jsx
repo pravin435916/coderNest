@@ -4,62 +4,104 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { backendApi } from '../Url';
+
 function Login() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email: '',
-        password: ''
+        password: '',
+        otp: '' // State to store OTP entered by user
     });
+    const [isOtpSent, setIsOtpSent] = useState(false); // Flag to toggle OTP input visibility
+    const [eyeBallStyles, setEyeBallStyles] = useState({ eyeball1: {}, eyeball2: {} });
+    const [handStyles, setHandStyles] = useState({ handl: {}, handr: {} });
 
+    // Handle input changes for email, password, and OTP
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    // Handle login form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             const res = await axios.post(`${backendApi}/api/users/login`, formData);
-            console.log(res.data);
-            toast.success('Login successfully');
-            localStorage.setItem('token', res.data.token);
-            navigate('/');
+            toast.success('Login successful. OTP sent to your email.');
+            setIsOtpSent(true); // Show OTP input after successful login
         } catch (error) {
             toast.error(error.response.data.message);
-            console.error(error.response.data.message);
         }
     };
+
+    // Handle OTP verification submission
+    const handleOtpVerification = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await axios.post(`${backendApi}/api/users/verify-otp`, { email: formData.email, otp: formData.otp });
+            toast.success('OTP verified successfully');
+            localStorage.setItem('token', res.data.token);
+            navigate('/'); // Navigate to the homepage/dashboard after successful login and OTP verification
+        } catch (error) {
+            toast.error(error.response.data.message);
+        }
+    };
+
     const handleFocusUsername = () => {
-        // Manipulate state to change styles for username focus
         setEyeBallStyles({ eyeball1: { top: '20px', left: '13px' }, eyeball2: { top: '20px', left: '8px' } });
         setHandStyles({ handl: { transform: 'rotate(0deg)', bottom: '140px', left: '50px', height: '45px', width: '35px' }, handr: { transform: 'rotate(0deg)', bottom: '185px', left: '250px', height: '45px', width: '35px' } });
     };
 
     const handleFocusPassword = () => {
-        // Manipulate state to change styles for password focus
         setEyeBallStyles({ eyeball1: { top: '10px', left: '10px' }, eyeball2: { top: '10px', left: '10px' } });
         setHandStyles({ handl: { transform: 'rotate(-150deg)', bottom: '215px', left: '105px', height: '90px', width: '40px' }, handr: { transform: 'rotate(150deg)', bottom: '308px', left: '192px', height: '90px', width: '40px' } });
     };
-    
-    const [eyeBallStyles, setEyeBallStyles] = useState({ eyeball1: {}, eyeball2: {} });
-    const [handStyles, setHandStyles] = useState({ handl: {}, handr: {} });
-    
+
     return (
         <div className='h-[90vh] bg-gray-200 w-full absolute flex justify-center items-center'>
             <div className='absolute p-8'>
-            <span>if you haven't login plz  <Link className='text-blue-400' to='/signup'>signup here</Link></span>
-                <form onSubmit={handleSubmit} className="login rounded-3xl bg-blue-300 ">
-                    <i className="fa fa-user" aria-hidden="true">&nbsp;&nbsp;</i>
-                    <input type="email"
-                        name="email" value={formData.email}
-                        onChange={handleChange} className='p-2 rounded-xl' placeholder='username' onFocus={handleFocusUsername} />
-                    <br /><br />
-                    <i className="fa fa-unlock-alt" aria-hidden="true">&nbsp;&nbsp;</i>
-                    <input type="password"
-                        name="password" value={formData.password}
-                        onChange={handleChange} className='p-2 rounded-xl' placeholder='password' onFocus={handleFocusPassword} />
-                    <br /><br />
-                    <button type="submit" className='primary-btn'>Login</button>
-                </form>
+                <span>If you haven't logged in, please <Link className='text-blue-400' to='/signup'>sign up here</Link></span>
+
+                {!isOtpSent ? (
+                    <form onSubmit={handleSubmit} className="login rounded-3xl bg-blue-300">
+                        <i className="fa fa-user" aria-hidden="true">&nbsp;&nbsp;</i>
+                        <input 
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            className='p-2 rounded-xl' 
+                            placeholder='Username' 
+                            onFocus={handleFocusUsername} 
+                        />
+                        <br /><br />
+                        <i className="fa fa-unlock-alt" aria-hidden="true">&nbsp;&nbsp;</i>
+                        <input 
+                            type="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            className='p-2 rounded-xl' 
+                            placeholder='Password' 
+                            onFocus={handleFocusPassword} 
+                        />
+                        <br /><br />
+                        <button type="submit" className='primary-btn'>Login</button>
+                    </form>
+                ) : (
+                    <form onSubmit={handleOtpVerification} className="login rounded-3xl bg-blue-300">
+                        <i className="fa fa-key" aria-hidden="true">&nbsp;&nbsp;</i>
+                        <input 
+                            type="text" 
+                            name="otp" 
+                            value={formData.otp} 
+                            onChange={handleChange} 
+                            className='p-2 rounded-xl' 
+                            placeholder='Enter OTP' 
+                        />
+                        <br /><br />
+                        <button type="submit" className='primary-btn'>Verify OTP</button>
+                    </form>
+                )}
                 <div className="backg">
                     <div className="panda">
                         <div className="earl"></div>
