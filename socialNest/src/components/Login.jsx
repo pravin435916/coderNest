@@ -15,6 +15,8 @@ function Login() {
     const [isOtpSent, setIsOtpSent] = useState(false); // Flag to toggle OTP input visibility
     const [eyeBallStyles, setEyeBallStyles] = useState({ eyeball1: {}, eyeball2: {} });
     const [handStyles, setHandStyles] = useState({ handl: {}, handr: {} });
+    // const [isOtpSent, setIsOtpSent] = useState(false); // Flag to toggle OTP input visibility
+    const [isLoading, setIsLoading] = useState(false);
 
     // Handle input changes for email, password, and OTP
     const handleChange = (e) => {
@@ -24,18 +26,22 @@ function Login() {
     // Handle login form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
         try {
             const res = await axios.post(`${backendApi}/api/users/login`, formData);
             toast.success('Login successful. OTP sent to your email.');
             setIsOtpSent(true); // Show OTP input after successful login
         } catch (error) {
             toast.error(error.response.data.message);
+        }finally{
+            setIsLoading(false);
         }
     };
 
     // Handle OTP verification submission
     const handleOtpVerification = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
         try {
             const res = await axios.post(`${backendApi}/api/users/verify-otp`, { email: formData.email, otp: formData.otp });
             toast.success('OTP verified successfully');
@@ -43,6 +49,8 @@ function Login() {
             navigate('/'); // Navigate to the homepage/dashboard after successful login and OTP verification
         } catch (error) {
             toast.error(error.response.data.message);
+        }finally{
+            setIsLoading(false);
         }
     };
 
@@ -85,7 +93,7 @@ function Login() {
                             onFocus={handleFocusPassword} 
                         />
                         <br /><br />
-                        <button type="submit" className='primary-btn'>Login</button>
+                        <button type="submit" className='primary-btn' disabled={isLoading}>{isLoading ? 'Loading...' : 'Login'}</button>
                     </form>
                 ) : (
                     <form onSubmit={handleOtpVerification} className="login rounded-3xl bg-blue-300">
@@ -99,7 +107,7 @@ function Login() {
                             placeholder='Enter OTP' 
                         />
                         <br /><br />
-                        <button type="submit" className='primary-btn'>Verify OTP</button>
+                        <button type="submit" className='primary-btn' disabled={isLoading}> {isLoading ? 'Verifying...' : 'Verify OTP'}</button>
                     </form>
                 )}
                 <div className="backg">
