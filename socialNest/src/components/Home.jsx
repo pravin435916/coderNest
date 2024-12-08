@@ -18,6 +18,19 @@ export const Home = () => {
     setImageFile(event.target.files[0]);
     console.log(imageFile)
   };
+  const [posts, setPosts] = useState([]);
+
+  const getAllPosts = async () => {
+    try {
+      setLoading(true)
+      const res = await axios.get(`${backendApi}/api/post/get`);
+      setPosts(res.data);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,6 +54,7 @@ export const Home = () => {
         },
       });
       toast.success('published successfully');
+      setPosts((prevPosts) => [res.data.newPost, ...prevPosts]);
       setInputText('');
       setImageFile(null)
     } catch (error) {

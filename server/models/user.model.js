@@ -1,12 +1,13 @@
 import mongoose from "mongoose";
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcrypt';
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true
   },
-  image:{
-    type:String
+  image: {
+    type: String
   },
   email: {
     type: String,
@@ -16,8 +17,16 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true
-  }
-},{timestamps:true});
+  },
+  otp: { 
+    type: Number, 
+    default: null 
+  },  // Store OTP
+  otpExpiresAt: { 
+    type: Number, 
+    default: null 
+  },  // Store OTP expiration time in milliseconds
+}, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);
 export default User;

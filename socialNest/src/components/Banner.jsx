@@ -9,7 +9,7 @@ export const Banner = () => {
             {
                 user ?
                    ( <div className='flex flex-col items-start gap-2 font-bold abel-regular'>
-                        <span className='text-3xl text-[#FF204E] font-cursive'>Hello , {user.name.toUpperCase()}</span>
+                        <span className='text-3xl text-[#FF204E] font-cursive'>Hello , {user.name}</span>
                         <span className='text-xs text-gray-500'>Whats new with you would you like to share something ?</span>
                     </div>) :
                    ( <div className='w-full items-center bg-[#ef5d5d] rounded-3xl shadow-xl h-52 p-4 flex gap-8 abel-regular'>
