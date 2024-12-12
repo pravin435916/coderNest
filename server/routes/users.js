@@ -169,4 +169,39 @@ router.get('/user-info', verifyToken, async (req, res) => {
   }
 });
 
+router.put('/update-profile', verifyToken, async (req, res) => {
+  try {
+    const { name, image, email, bio, links } = req.body;
+    const updatedFields = {};
+
+    // Only include fields that are provided in the request
+    if (name !== undefined) updatedFields.name = name;
+    if (image !== undefined) updatedFields.image = image;
+    if (email !== undefined) {
+      // Check if new email already exists
+      if (email !== (await User.findById(req.userId)).email) {
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+          return res.status(400).json({ message: 'Email already exists' });
+        }
+      }
+      updatedFields.email = email;
+    }
+    if (bio !== undefined) updatedFields.bio = bio;
+    if (links !== undefined) updatedFields.links = links;
+
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      { $set: updatedFields },
+      { new: true }
+    );
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({ message: 'Profile updated successfully', user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 export default router;

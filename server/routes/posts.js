@@ -7,6 +7,9 @@ import path from 'path';
 import * as dotenv from 'dotenv'
 dotenv.config()
 import { fileURLToPath } from 'url';
+import Notification from '../models/notification.model.js';
+import User from '../models/user.model.js';
+import mongoose from 'mongoose';
 
 const router = express.Router();
 
@@ -157,27 +160,85 @@ router.get('/get' , async (req,res) => {
         res.status(500).json({msg : error});
      }
 }) 
-router.put('/like/:id' , async (req,res) => {
-    try {
-        const id = req.params.id;
-        const data  = {
-         userId:req.body.userId,
-         isLike:req.body.isLike
-        }
-        const post = await Post.findById(id)
-        if(!post.likes) {
-         const updatePost = await Post.findByIdAndUpdate(id,{likes:[]},{upsert:true})
-         await updatePost.save()
-        }
-        const updatedPost = await Post.findById(id);
-        data.isLike ? updatedPost.likes.push(data.userId) : updatedPost.likes.pop(data.userId)
-        const result = await updatedPost.save()
-        res.json(result);
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server Error' });
+router.put('/like/:id', async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const { userId, isLike } = req.body;
+
+    // Find the post
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // Initialize likes array if not present
+    if (!post.likes) {
+      post.likes = [];
+    }
+
+    // Update likes array
+    if (isLike) {
+      if (!post.likes.includes(userId)) {
+        post.likes.push(userId);
       }
-}) 
+    } else {
+      post.likes = post.likes.filter(id => id.toString() !== userId);
+    }
+
+    // Save the updated post
+    const updatedPost = await post.save();
+
+    // Find the owner (receiver) of the post
+    const receiverId = post.createdBy; // Assuming `post.userId` is the ID of the post owner
+    console.log("reciver",receiverId)
+    const liker = await User.findById(userId); // Get the user who liked the post
+    console.log("liker",liker)
+    if (!liker) {
+      return res.status(404).json({ message: 'Liker user not found' });
+    }
+
+    // Create a notification for the receiver
+    if (isLike) {
+      const notification = new Notification({
+        userId: receiverId, // The receiver of the notification
+        postId,
+        message: `${liker.name} liked your post!`,
+      });
+      await notification.save();
+
+      // Emit the notification to the receiver via Socket.io
+      req.io.emit('newNotification', {
+        userId: receiverId,
+        message: `${liker.name} liked your post!`,
+        postId,
+      });
+    }
+
+    res.json(updatedPost);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+
+router.get('/notifications/:userId', async (req, res) => {
+  try {
+    // const userId = mongoose.Types.ObjectId(req.params.userId);
+    const notifications = await Notification.find({ userId:req.params.userId })
+    .sort({ createdAt: -1 });
+    console.log(req.params.userId)
+
+    if (!notifications.length) {
+      return res.status(404).json({ message: 'No notifications found' });
+    }
+
+    res.json(notifications);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error fetching notifications' });
+  }
+});
 
 
 export default router

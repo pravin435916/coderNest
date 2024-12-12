@@ -18,6 +18,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  bio: { 
+    type: String,
+  },  // bio
+  links: [{ 
+    type: String,
+  }],  // bio
   otp: { 
     type: Number, 
     default: null 

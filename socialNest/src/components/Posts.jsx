@@ -7,9 +7,12 @@ import { Link } from 'react-router-dom';
 import { UserContext } from '../context/UserProvider';
 import toast from 'react-hot-toast';
 import Skeleton from 'react-loading-skeleton';
+import { FaFacebook, FaTwitter, FaCopy, FaShareAlt } from "react-icons/fa";
 import 'react-loading-skeleton/dist/skeleton.css';
 import SkeletonComp from './Loader/SkeletonComp';
 import { backendApi } from '../Url';
+import { PostContent } from './PostContent';
+import ShareButton from './ShareButton';
 
 export const Posts = () => {
   const [loading, setLoading] = useState(true);
@@ -18,6 +21,12 @@ export const Posts = () => {
   const [editImage, setEditImage] = useState(null);
   const user = useContext(UserContext);
   const [posts, setPosts] = useState([]);
+  const handleCopyLink = () => {
+    navigator.clipboard
+      .writeText(shareUrl)
+      .then(() => toast.success("Link copied to clipboard!"))
+      .catch(() => toast.error("Failed to copy link."));
+  };
 
   const getAllPosts = async () => {
     try {
@@ -80,6 +89,7 @@ export const Posts = () => {
     setEditContent(post.content);
     setEditImage(null);
   };
+  // const highlighted = Prism.highlight(text, Prism.languages.javascript, 'javascript');
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
@@ -145,18 +155,20 @@ export const Posts = () => {
               </form>
             ) : (
               <>
-                <p className="mt-2">{post?.content}</p>
+                {/* <p className="mt-2">{post?.content}</p> */}
+                <PostContent content={post?.content} />
+
                 {post?.imageUrl && <img className="w-full sm:w-[80%] object-cover sm:px-20 mt-4 rounded-sm" src={post?.imageUrl} alt="" />}
                 <div className="flex justify-between sm:justify-start gap-4 mt-4">
                   <div className="flex gap-1 items-center cursor-pointer" onClick={() => handleLike(post?._id)}>
-                    <span>{!checkIsLiked(post?.likes) ? <CiHeart /> : <FaHeart className='text-red-600' />}</span>
                     <span>{post?.likes?.length}</span>
-                    <span>Likes</span>
+                    <span>{!checkIsLiked(post?.likes) ? <CiHeart /> : <FaHeart className='text-red-600' />}</span>
+                    {/* <span>Likes</span> */}
                   </div>
                   <div className="flex gap-1 items-center">
-                    <span><FaRegCommentDots className="text-xl" /></span>
                     <span>21</span>
-                    <span>Comment</span>
+                    <span><FaRegCommentDots className="text-xl" /></span>
+                    {/* <span>Comment</span> */}
                   </div>
                   {user && post?.createdBy?._id === user?._id && (
                     <div className="flex gap-1 items-center">
@@ -164,6 +176,7 @@ export const Posts = () => {
                       <span className="cursor-pointer" onClick={() => handleDelete(post._id)}><FaTrash className="text-red-600" /></span>
                     </div>
                   )}
+                  {/* <ShareButton post={post}/> */}
                 </div>
               </>
             )}

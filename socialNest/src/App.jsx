@@ -11,6 +11,7 @@ import Logout from "./components/Logout";
 import { UserContext } from "./context/UserProvider";
 import NotFound from "./pages/NotFound";
 import Loader from "./components/Loader/Loader";
+import Notification from "./components/Notification";
 
 export default function App() {
   const user = useContext(UserContext);
@@ -40,6 +41,7 @@ export default function App() {
             <>
               <Route path="/profile" element={<Profile />}></Route>
               <Route path="/logout" element={<Logout />}></Route>
+              <Route path="/notify" element={<Notification />}></Route>
               <Route path="/user/:userId" element={<UserProfile />} />
             </>
           )}

@@ -8,8 +8,11 @@ import { FaRegUser } from "react-icons/fa6";
 import { UserContext } from '../context/UserProvider';
 import toast from 'react-hot-toast';
 import { IoMenu, IoClose } from "react-icons/io5"; // Added menu and close icons
+import { FaBell } from 'react-icons/fa';
+import { useNotifications } from '../context/NotificationProvider';
 export const SlideBar = () => {
     const navigate = useNavigate();
+    const { unreadCount } = useNotifications();
 
     const user = useContext(UserContext);
     const [isOpen, setIsOpen] = useState(false);
@@ -30,34 +33,43 @@ export const SlideBar = () => {
                         <span className='abel-regular'>Home</span>
                     </div>
                 </Link>
+                <Link to='/notify'>
+                    <div className='flex items-center gap-2 font-semibold text-xl'>
+                        <span><FaBell className='text-2xl' /></span>
+                        {unreadCount > 0 && (
+                            <span>{unreadCount}</span>
+                        )}
+                        <span className='abel-regular'>Notification</span>
+                    </div>
+                </Link>
                 <Link to='/community'>
                     <div className='flex items-center gap-2 font-semibold text-xl'>
                         <span><BsRocketTakeoff className='text-2xl' /></span>
-                        <span  className='abel-regular'>Community</span>
+                        <span className='abel-regular'>Community</span>
                     </div>
                 </Link>
                 <Link to='/tools'>
                     <div className='flex items-center gap-2 font-semibold text-xl'>
                         <span><PiCodesandboxLogo className='text-2xl' /></span>
-                        <span  className='abel-regular'>Tools</span>
+                        <span className='abel-regular'>Tools</span>
                     </div>
                 </Link>
                 <Link to='/settings'>
                     <div className='flex items-center gap-2 font-semibold text-xl'>
                         <span><IoSettingsOutline className='text-2xl' /></span>
-                        <span  className='abel-regular'>Settings</span>
+                        <span className='abel-regular'>Settings</span>
                     </div>
                 </Link>
                 <Link to='/profile'>
                     <div className='flex items-center gap-2 font-semibold text-xl'>
                         <span><FaRegUser className='text-2xl' /></span>
-                        <span  className='abel-regular'>User</span>
+                        <span className='abel-regular'>User</span>
                     </div>
                 </Link>
                 {user && (
-                    <div  className='flex cursor-pointer items-center mt-20 gap-2 font-semibold text-xl'>
+                    <div className='flex cursor-pointer items-center mt-20 gap-2 font-semibold text-xl'>
                         <span><IoExit className='text-2xl' /></span>
-                         <Link to={'/logout'}>Logout</Link>
+                        <Link to={'/logout'}>Logout</Link>
                     </div>
                 )}
             </div>
