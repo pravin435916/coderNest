@@ -45,6 +45,10 @@ export const NotificationProvider = ({ children }) => {
       console.log('New notification:', message);
       addNotification(message);
     });
+    socket.on('followNotification', (message) => {
+      console.log('New follow:', message);
+      addNotification(message);
+    });
 
     // Handle socket connection error
     socket.on('connect_error', (error) => {
@@ -54,6 +58,8 @@ export const NotificationProvider = ({ children }) => {
     // Cleanup
     return () => {
       socket.off('newNotification');
+      socket.off('followNotification');
+      
     };
   }, []);
 

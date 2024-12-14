@@ -3,16 +3,11 @@ import axios from 'axios';
 import moment from 'moment';
 import { CiHeart } from 'react-icons/ci';
 import { FaFire, FaRegCommentDots, FaHeart, FaTrash, FaEdit } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
 import { UserContext } from '../context/UserProvider';
 import toast from 'react-hot-toast';
-import Skeleton from 'react-loading-skeleton';
-import { FaFacebook, FaTwitter, FaCopy, FaShareAlt } from "react-icons/fa";
-import 'react-loading-skeleton/dist/skeleton.css';
 import SkeletonComp from './Loader/SkeletonComp';
 import { backendApi } from '../Url';
 import { PostContent } from './PostContent';
-import ShareButton from './ShareButton';
 
 export const Posts = () => {
   const [loading, setLoading] = useState(true);
@@ -21,16 +16,11 @@ export const Posts = () => {
   const [editImage, setEditImage] = useState(null);
   const user = useContext(UserContext);
   const [posts, setPosts] = useState([]);
-  const handleCopyLink = () => {
-    navigator.clipboard
-      .writeText(shareUrl)
-      .then(() => toast.success("Link copied to clipboard!"))
-      .catch(() => toast.error("Failed to copy link."));
-  };
+  const [followedUsers, setFollowedUsers] = useState([]); // Track followed users
 
   const getAllPosts = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       const res = await axios.get(`${backendApi}/api/post/get`);
       setPosts(res.data);
     } catch (error) {
@@ -54,7 +44,7 @@ export const Posts = () => {
       const post = posts[postIndex];
       const isLiked = checkIsLiked(post.likes);
 
-      const updatedLikes = isLiked 
+      const updatedLikes = isLiked
         ? post.likes.filter(like => like._id !== user._id)
         : [...post.likes, { _id: user._id }];
 
@@ -77,7 +67,7 @@ export const Posts = () => {
   const handleDelete = async (postId) => {
     try {
       await axios.delete(`${backendApi}/api/post/delete/${postId}`);
-      toast.success("Deleted Successfully!")
+      toast.success("Deleted Successfully!");
       setPosts(posts.filter(post => post._id !== postId));
     } catch (error) {
       console.error('Error deleting post:', error);
@@ -89,7 +79,6 @@ export const Posts = () => {
     setEditContent(post.content);
     setEditImage(null);
   };
-  // const highlighted = Prism.highlight(text, Prism.languages.javascript, 'javascript');
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
@@ -124,6 +113,62 @@ export const Posts = () => {
     setEditImage(e.target.files[0]);
   };
 
+  // Fetch and set the followed users
+  // useEffect(() => {
+  //   const getFollowedUsers = async () => {
+  //     try {
+  //       const response = await axios.get(`${backendApi}/api/users/followed-users/${user?._id}`);
+  //       setFollowedUsers(response.data); // Set the followed users list
+  //     } catch (error) {
+  //       console.error('Error fetching followed users:', error);
+  //     }
+  //   };
+    
+  //   if (user?._id) {
+  //     getFollowedUsers();
+  //   }
+  // }, [user?._id]);
+
+  // Handle the follow action
+  const handleFollow = async (targetUserId) => {
+    try {
+      await axios.put(`${backendApi}/api/users/follow/${targetUserId}`, {
+        userId: user?._id,
+      });
+      setFollowedUsers(prevState => [...prevState, targetUserId]); // Add to followed list
+      toast.success('Followed successfully!');
+    } catch (error) {
+      console.error('Error following user:', error);
+      toast.success(error.message);
+    }
+  };
+
+  // Handle the unfollow action
+  const handleUnfollow = async (targetUserId) => {
+    try {
+      await axios.put(`${backendApi}/api/users/unfollow/${targetUserId}`, {
+        userId: user?._id,
+      });
+      setFollowedUsers(prevState => prevState.filter(userId => userId !== targetUserId)); // Remove from followed list
+      toast.success('Unfollowed successfully!');
+    } catch (error) {
+      console.error('Error unfollowing user:', error);
+    }
+  };
+  useEffect(() => {
+    const fetchFollowedUsers = async () => {
+      try {
+        const response = await axios.get(`${backendApi}/api/users/followed`);
+        setFollowedUsers(response.data.followedUsers.map(user => user._id));
+      } catch (error) {
+        console.error('Error fetching followed users:', error);
+      }
+    };
+  
+    fetchFollowedUsers();
+  }, []);  // Empty dependency array ensures it runs once when the component mounts
+  
+  // const [followedUsers.setFollowedUsers]
   return (
     <div>
       <div className='flex gap-2 items-center my-2'>
@@ -136,11 +181,22 @@ export const Posts = () => {
         posts.map(post => (
           <div className="w-full flex flex-col bg-gray-100 rounded-md mb-4 p-4 abel-regular" key={post._id}>
             <div className="flex items-center gap-2">
-              <img className="w-8 h-8 rounded-full" 
-              src={'https://github.com/shadcn.png'} alt="" />
-              {/* src={post?.createdBy?.image || 'https://github.com/shadcn.png'} alt="" /> */}
+              <img className="w-8 h-8 rounded-full"
+                src={`https://api.dicebear.com/9.x/micah/svg?seed=${post?.createdBy?.name}`} alt="" />
               <h3 className="font-bold">@{post?.createdBy?.name}</h3>
               <span className="text-xs">{moment(Number(post?.createdAt)).format('DD MMM | hh:mm A')}</span>
+              <button
+                onClick={() => {
+                  if (followedUsers.includes(post?.createdBy?._id)) {
+                    handleUnfollow(post?.createdBy?._id);
+                  } else {
+                    handleFollow(post?.createdBy?._id);
+                  }
+                }}
+                className={`px-4 py-2 rounded ${followedUsers.includes(post?.createdBy?._id) ? 'bg-red-500' : 'bg-blue-500'} text-white`}
+              >
+                {followedUsers.includes(post?.createdBy?._id) ? 'Unfollow' : 'Follow'}
+              </button>
             </div>
             {user && editingPostId === post?._id ? (
               <form onSubmit={handleEditSubmit} className="mt-2">
@@ -155,20 +211,16 @@ export const Posts = () => {
               </form>
             ) : (
               <>
-                {/* <p className="mt-2">{post?.content}</p> */}
                 <PostContent content={post?.content} />
-
                 {post?.imageUrl && <img className="w-full sm:w-[80%] object-cover sm:px-20 mt-4 rounded-sm" src={post?.imageUrl} alt="" />}
                 <div className="flex justify-between sm:justify-start gap-4 mt-4">
                   <div className="flex gap-1 items-center cursor-pointer" onClick={() => handleLike(post?._id)}>
                     <span>{post?.likes?.length}</span>
                     <span>{!checkIsLiked(post?.likes) ? <CiHeart /> : <FaHeart className='text-red-600' />}</span>
-                    {/* <span>Likes</span> */}
                   </div>
                   <div className="flex gap-1 items-center">
                     <span>21</span>
                     <span><FaRegCommentDots className="text-xl" /></span>
-                    {/* <span>Comment</span> */}
                   </div>
                   {user && post?.createdBy?._id === user?._id && (
                     <div className="flex gap-1 items-center">
@@ -176,7 +228,6 @@ export const Posts = () => {
                       <span className="cursor-pointer" onClick={() => handleDelete(post._id)}><FaTrash className="text-red-600" /></span>
                     </div>
                   )}
-                  {/* <ShareButton post={post}/> */}
                 </div>
               </>
             )}

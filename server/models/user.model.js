@@ -32,6 +32,8 @@ const userSchema = new mongoose.Schema({
     type: Number, 
     default: null 
   },  // Store OTP expiration time in milliseconds
+  followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Users who follow this user
+  following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Users this user follows
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);

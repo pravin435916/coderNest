@@ -204,4 +204,183 @@ router.put('/update-profile', verifyToken, async (req, res) => {
   }
 });
 
+
+// Follow a user
+// router.put('/follow/:id', async (req, res) => {
+//   try {
+//     const userId = req.body.userId; // ID of the logged-in user
+//     const followId = req.params.id; // ID of the user to follow
+//     console.log("user",userId)
+//     console.log(followId)
+
+//     if (userId === followId) {
+//       return res.status(400).json({ message: 'You cannot follow yourself.' });
+//     }
+
+//     const user = await User.findById(userId);
+//     const userToFollow = await User.findById(followId);
+
+//     if (!user || !userToFollow) {
+//       return res.status(404).json({ message: 'User not found.' });
+//     }
+
+//     if (!user.following.includes(followId)) {
+//       user.following.push(followId);
+//       userToFollow.followers.push(userId);
+//       await user.save();
+//       await userToFollow.save();
+//       return res.status(200).json({ message: 'Followed successfully.' });
+//     } else {
+//       return res.status(400).json({ message: 'Already following this user.' });
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Server error.' });
+//   }
+// });
+router.put('/follow/:id', async (req, res) => {
+  try {
+    const userId = req.body.userId; // ID of the logged-in user
+    const followId = req.params.id; // ID of the user to follow
+
+    if (userId === followId) {
+      return res.status(400).json({ message: 'You cannot follow yourself.' });
+    }
+
+    // Use $addToSet to prevent duplicate entries
+    const userUpdate = await User.findByIdAndUpdate(
+      userId,
+      { $addToSet: { following: followId } },
+      { new: true } // Return the updated document
+    );
+
+    const followUserUpdate = await User.findByIdAndUpdate(
+      followId,
+      { $addToSet: { followers: userId } },
+      { new: true }
+    );
+
+    if (!userUpdate || !followUserUpdate) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Emit a real-time notification to the followed user (if using Socket.IO)
+    if (req.io) {
+      req.io.emit('followNotification', {
+        userId: followId,
+        message: `${userUpdate.name} started following you.`,
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Followed successfully.',
+      user: userUpdate,
+      followedUser: followUserUpdate,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// Unfollow a user
+router.put('/unfollow/:id', async (req, res) => {
+  try {
+    const userId = req.body.userId; // ID of the logged-in user
+    const unfollowId = req.params.id; // ID of the user to unfollow
+
+    if (userId === unfollowId) {
+      return res.status(400).json({ message: 'You cannot unfollow yourself.' });
+    }
+
+    // Remove the unfollowed user from the following list of the logged-in user
+    const userUpdate = await User.findByIdAndUpdate(
+      userId,
+      { $pull: { following: unfollowId } },
+      { new: true } // Return the updated document
+    );
+
+    // Remove the logged-in user from the followers list of the user being unfollowed
+    const unfollowUserUpdate = await User.findByIdAndUpdate(
+      unfollowId,
+      { $pull: { followers: userId } },
+      { new: true }
+    );
+
+    if (!userUpdate || !unfollowUserUpdate) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Emit a real-time notification to the user who was unfollowed (optional)
+    if (req.io) {
+      req.io.emit('unfollowNotification', {
+        userId: unfollowId,
+        message: `${userUpdate.name} unfollowed you.`,
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Unfollowed successfully.',
+      user: userUpdate,
+      unfollowedUser: unfollowUserUpdate,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// Check if current user follows a target user
+router.get('/follow-status/:targetUserId', async (req, res) => {
+  try {
+    const userId = req.query.userId; // Get the current user ID from query parameters
+    const targetUserId = req.params.targetUserId; // Get the target user ID from the URL params
+
+    if (!userId || !targetUserId) {
+      return res.status(400).json({ message: 'User IDs are required.' });
+    }
+
+    // Fetch the current user and check if they are following the target user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const isFollowing = user.following.includes(targetUserId);
+
+    return res.status(200).json({ isFollowing });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+router.get('/followed', async (req, res) => {
+  try {
+    const userId = req.user._id; // Assuming user is authenticated
+    const user = await User.findById(userId).populate('following');
+    res.json({ followedUsers: user.following });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+// Get followers and following
+router.get('/:id/followers-following', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).populate('followers following', 'name email');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+    res.status(200).json({
+      followers: user.followers,
+      following: user.following,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error.' });
+  }
+});
 export default router;

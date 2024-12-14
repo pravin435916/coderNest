@@ -27,6 +27,23 @@ const Profile = () => {
 
     fetchUserPosts();
   }, []);
+  const [followers, setFollowers] = useState([]);
+  const [following, setFollowing] = useState([]);
+
+  useEffect(() => {
+    const fetchFollowersAndFollowing = async () => {
+      try {
+        const response = await axios.get(`${backendApi}/api/users/${user?._id}/followers-following`);
+        console.log(response.data)
+        setFollowers(response.data.followers);
+        setFollowing(response.data.following);
+      } catch (error) {
+        console.error('Error fetching followers and following:', error);
+      }
+    };
+
+    fetchFollowersAndFollowing();
+  }, [user?._id]);
 
   const likesCount = () => {
     return posts.reduce((sum, post) => sum + post.likes.length, 0);
@@ -52,6 +69,22 @@ const Profile = () => {
           </div>
         </div>
         <hr className="border-t border-gray-300" />
+        <div>
+      <h2>Followers</h2>
+      <ul>
+        {followers.map((follower) => (
+          <li key={follower._id}>{follower.name}</li>
+        ))}
+      </ul>
+
+      <h2>Following</h2>
+      <ul>
+        {following.map((follow) => (
+          <li key={follow._id}>{follow.name}</li>
+        ))}
+      </ul>
+    </div>
+    <hr className="border-t border-gray-300" />
         <h2 className="text-lg font-semibold text-gray-800 mt-6 mb-4">Your Posts</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts.length > 0 ? (
