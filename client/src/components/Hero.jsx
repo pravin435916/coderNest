@@ -1,15 +1,15 @@
 // src/HeroSection.js
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { SlideBar } from './SlideBar';
 import { Home } from './Home';
-import { SideBar } from './SideBar';
+import RightSideBar from './RightSideBar';
+import LeftSideBar from './LeftSideBar';
 const Hero= () => {
   return (
     <div className="flex flex-col sm:flex-row sm:h-[90vh]">
-      <SlideBar/>
+      <LeftSideBar/>
       <Home/>
-      <SideBar/>
+      <RightSideBar/>
     </div>
   );
 }

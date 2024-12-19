@@ -182,7 +182,7 @@ const Profile = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-center gap-2">
             <div className="relative">
               <img
                 className="w-24 h-24 rounded-full border-4 border-indigo-50"
@@ -200,7 +200,7 @@ const Profile = () => {
               <h1 className="text-2xl font-bold text-gray-800">{user?.name}</h1>
               <p className="text-gray-600">{user?.email}</p>
               <p className="text-gray-500 mt-1">{user?.bio}</p>
-              <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+              <div className="flex items-center sm:gap-4 gap-0  mt-2 text-sm text-gray-500">
                 <span className="flex items-center gap-1">
                   <FaRegCalendarAlt />
                   Joined {moment(user?.createdAt).format('MMMM YYYY')}

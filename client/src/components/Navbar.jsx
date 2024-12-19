@@ -7,7 +7,7 @@ export const Navbar = () => {
   const user = useContext(UserContext);
   return (
     <div className='w-full flex justify-between items-center p-4 abel-regular'>
-      <div className='flex gap-2 items-center'>
+      <div className='flex gap-2 items-center ml-8 sm:ml-1'>
         <span className ='font-cursive font-bold text-3xl text-[#FF204E]'><FaLaptopCode /></span>
         <span className ='font-cursive font-bold text-3xl text-[#FF204E]'>CoderNest</span>
       </div>

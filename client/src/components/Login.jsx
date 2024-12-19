@@ -31,6 +31,7 @@ function Login() {
             const res = await axios.post(`${backendApi}/api/users/login`, formData);
             toast.success('Login successful. OTP sent to your email.');
             setIsOtpSent(true); // Show OTP input after successful login
+            
         } catch (error) {
             toast.error(error.response.data.message);
         }finally{
@@ -47,6 +48,7 @@ function Login() {
             toast.success('OTP verified successfully');
             localStorage.setItem('token', res.data.token);
             navigate('/'); // Navigate to the homepage/dashboard after successful login and OTP verification
+            window.location.reload();
         } catch (error) {
             toast.error(error.response.data.message);
         }finally{
