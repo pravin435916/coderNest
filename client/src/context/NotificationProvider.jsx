@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
+// import { io } from 'socket.io-client';
 import axios from 'axios';
 import { backendApi } from '../Url';
 
@@ -12,7 +12,7 @@ export const NotificationProvider = ({ children }) => {
   const [unreadCount, setUnreadCount] = useState(0);
 
   // Initialize Socket.io
-  const socket = io('http://localhost:5000'); // Replace with your backend URL
+  // const socket = io('http://localhost:5000'); // Replace with your backend URL
 
   // Fetch Notifications
   const fetchNotifications = async (userId) => {
@@ -39,29 +39,29 @@ export const NotificationProvider = ({ children }) => {
     setUnreadCount((prev) => prev + 1);
   };
 
-  useEffect(() => {
-    // Listen for new notifications via Socket.io
-    socket.on('newNotification', (message) => {
-      console.log('New notification:', message);
-      addNotification(message);
-    });
-    socket.on('followNotification', (message) => {
-      console.log('New follow:', message);
-      addNotification(message);
-    });
+  // useEffect(() => {
+  //   // Listen for new notifications via Socket.io
+  //   socket.on('newNotification', (message) => {
+  //     console.log('New notification:', message);
+  //     addNotification(message);
+  //   });
+  //   socket.on('followNotification', (message) => {
+  //     console.log('New follow:', message);
+  //     addNotification(message);
+  //   });
 
-    // Handle socket connection error
-    socket.on('connect_error', (error) => {
-      console.error('Connection error:', error);
-    });
+  //   // Handle socket connection error
+  //   socket.on('connect_error', (error) => {
+  //     console.error('Connection error:', error);
+  //   });
 
-    // Cleanup
-    return () => {
-      socket.off('newNotification');
-      socket.off('followNotification');
+  //   // Cleanup
+  //   return () => {
+  //     socket.off('newNotification');
+  //     socket.off('followNotification');
       
-    };
-  }, []);
+  //   };
+  // }, []);
 
   return (
     <NotificationContext.Provider

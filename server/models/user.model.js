@@ -20,20 +20,47 @@ const userSchema = new mongoose.Schema({
   },
   bio: { 
     type: String,
-  },  // bio
+  }, 
   links: [{ 
     type: String,
-  }],  // bio
+  }],
   otp: { 
     type: Number, 
     default: null 
-  },  // Store OTP
+  }, 
   otpExpiresAt: { 
     type: Number, 
     default: null 
-  },  // Store OTP expiration time in milliseconds
-  followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Users who follow this user
-  following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Users this user follows
+  }, 
+  followers: [{ 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User' 
+  }], 
+  following: [{ 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User' 
+  }], 
+  codingProfiles: {
+    leetcode: { 
+      username: { type: String, default: null },
+      score: { type: Number, default: 0 },
+      totalSolved: { type: Number, default: 0 },
+    }, // LeetCode username
+    codechef: {
+      username: { type: String, default: null },
+      currentRating: { type: Number, default: 0 },
+      highestRating: { type: Number, default: 0 },
+      stars: { type: String, default: null },
+      }, // CodeChef username
+    gfg: { 
+      username: { type: String, default: null },
+      score: { type: Number, default: 0 },
+    },      // GeeksforGeeks username
+    hackerrank: { 
+      username: { type: String, default: null },
+      score: { type: Number, default: 0 },
+     } // HackerRank username
+  }
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);

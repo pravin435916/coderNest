@@ -4,6 +4,8 @@ import bcrypt from 'bcrypt';
 import User from '../models/user.model.js';
 import Post from '../models/posts.model.js';
 import nodemailer from 'nodemailer'; // For sending OTPs
+import { fetchLeetCodeStats } from '../utils/leetcodeUtils.js';
+import { fetchCodeChefStats } from '../utils/codechefUtils.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'PRAV2004';
@@ -171,7 +173,7 @@ router.get('/user-info', verifyToken, async (req, res) => {
 
 router.put('/update-profile', verifyToken, async (req, res) => {
   try {
-    const { name, image, email, bio, links } = req.body;
+    const { name, image, email, bio, links, codingProfiles } = req.body;
     const updatedFields = {};
 
     // Only include fields that are provided in the request
@@ -190,6 +192,75 @@ router.put('/update-profile', verifyToken, async (req, res) => {
     if (bio !== undefined) updatedFields.bio = bio;
     if (links !== undefined) updatedFields.links = links;
 
+    // Validate and update coding profiles
+    if (codingProfiles !== undefined) {
+      updatedFields.codingProfiles = {};
+      const allowedProfiles = ['leetcode', 'codechef', 'gfg', 'hackerrank'];
+       // Handle LeetCode
+       if (codingProfiles.leetcode?.username) {
+        console.log('Fetching LeetCode stats for:', codingProfiles.leetcode.username);
+        const leetcodeStats = await fetchLeetCodeStats(codingProfiles.leetcode.username);
+        console.log('leetcodeStats: ', leetcodeStats);
+        
+        if (leetcodeStats) {
+          updatedFields.codingProfiles.leetcode = {
+            username: codingProfiles.leetcode.username,
+            score: leetcodeStats.score,
+            totalSolved:leetcodeStats.totalSolved
+          }
+        } 
+        else {
+          updatedFields.codingProfiles.leetcode = {
+            username: codingProfiles.leetcode.username,
+            score: 0
+          };
+        }
+      }
+
+      // Handle other profiles with the new structure
+      if (codingProfiles.codechef?.username) {
+        const codechefStats = await fetchCodeChefStats(codingProfiles.codechef.username);
+        console.log('codechefStats: ', codechefStats);
+        
+        if (codechefStats) {
+          updatedFields.codingProfiles.codechef = {
+            username: codingProfiles.codechef.username,
+            currentRating: codechefStats.currentRating,
+            highestRating: codechefStats.highestRating,
+            stars: codechefStats.stars,
+          }
+        } 
+        else {
+          updatedFields.codingProfiles.codechef = {
+            username: codingProfiles.codechef.username,
+          };
+        }
+      }
+      
+      if (codingProfiles.gfg?.username) {
+        updatedFields.codingProfiles.gfg = {
+          username: codingProfiles.gfg.username,
+          score: 0
+        };
+      }
+      
+      if (codingProfiles.hackerrank?.username) {
+        updatedFields.codingProfiles.hackerrank = {
+          username: codingProfiles.hackerrank.username,
+          score: 0
+        };
+      }
+
+    console.log('Updated fields:', updatedFields);
+
+      // Only include valid coding profiles from the request
+      // allowedProfiles.forEach(profile => {
+      //   if (codingProfiles[profile] !== undefined) {
+      //     updatedFields.codingProfiles[profile] = codingProfiles[profile];
+      //   }
+      // });
+    }
+
     const user = await User.findByIdAndUpdate(
       req.userId,
       { $set: updatedFields },
@@ -203,6 +274,7 @@ router.put('/update-profile', verifyToken, async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 });
+
 
 
 // Follow a user

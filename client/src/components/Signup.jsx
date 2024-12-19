@@ -33,6 +33,7 @@ const Signup = () => {
       console.log(res.data);
       localStorage.setItem('token', res.data.token);
       toast.success('Signup successfully');
+      window.location.reload();
       navigate('/')
     } catch (error) {
       console.error(error.response?.data?.message || 'An error occurred');

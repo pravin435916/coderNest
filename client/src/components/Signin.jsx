@@ -25,6 +25,7 @@ const Signin = () => {
       console.log(res.data);
       toast.success('Login successfully');
       localStorage.setItem('token', res.data.token);
+      window.location.reload();
       navigate('/');
     } catch (error) {
       toast.error(error.response.data.message);

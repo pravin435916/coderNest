@@ -8,31 +8,22 @@ import toast from 'react-hot-toast';
 import SkeletonComp from './Loader/SkeletonComp';
 import { backendApi } from '../Url';
 import { PostContent } from './PostContent';
-
+import usePostStore from '../store/post.store';
+import useUserStore from '../store/user.store';
 export const Posts = () => {
-  const [loading, setLoading] = useState(true);
   const [editingPostId, setEditingPostId] = useState(null);
   const [editContent, setEditContent] = useState('');
   const [editImage, setEditImage] = useState(null);
-  const user = useContext(UserContext);
-  const [posts, setPosts] = useState([]);
+  const {user,fetchUserInfo} = useUserStore()
+  const {posts,fetchPosts,deletePost,likePost,loading} = usePostStore()
   const [followedUsers, setFollowedUsers] = useState([]); // Track followed users
 
-  const getAllPosts = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(`${backendApi}/api/post/get`);
-      setPosts(res.data);
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  
   useEffect(() => {
-    getAllPosts();
+    fetchPosts();
+    fetchUserInfo();
   }, []);
+  // const [filteredPosts,setFilteredPosts] = useState(posts)
 
   const checkIsLiked = (postLikes) => {
     return postLikes.some(item => item._id === user?._id);
@@ -40,25 +31,11 @@ export const Posts = () => {
 
   const handleLike = async (postId) => {
     try {
-      const postIndex = posts.findIndex(post => post._id === postId);
-      const post = posts[postIndex];
+      const post = posts.find((post) => post._id === postId);
       const isLiked = checkIsLiked(post.likes);
-
-      const updatedLikes = isLiked
-        ? post.likes.filter(like => like._id !== user._id)
-        : [...post.likes, { _id: user._id }];
-
-      const updatedPosts = [...posts];
-      updatedPosts[postIndex] = { ...post, likes: updatedLikes };
-
-      setPosts(updatedPosts);
-
-      const data = {
-        userId: user._id,
-        isLike: !isLiked
-      };
-
-      await axios.put(`${backendApi}/api/post/like/${postId}`, data);
+  
+      // Call the store's likePost method
+      await likePost(postId, user?._id, !isLiked);
     } catch (error) {
       console.error('Error toggling like:', error);
     }
@@ -66,9 +43,9 @@ export const Posts = () => {
 
   const handleDelete = async (postId) => {
     try {
-      await axios.delete(`${backendApi}/api/post/delete/${postId}`);
+      await deletePost(postId);
       toast.success("Deleted Successfully!");
-      setPosts(posts.filter(post => post._id !== postId));
+      posts.filter(post => post._id !== postId);
     } catch (error) {
       console.error('Error deleting post:', error);
     }
@@ -178,7 +155,7 @@ export const Posts = () => {
       {loading ? (
         Array(5).fill().map((_, index) => <SkeletonComp key={index} />)
       ) : (
-        posts.map(post => (
+        posts?.map(post => (
           <div className="w-full flex flex-col bg-gray-100 rounded-md mb-4 p-4 abel-regular" key={post._id}>
             <div className="flex items-center gap-2">
               <img className="w-8 h-8 rounded-full"
