@@ -1,0 +1,55 @@
+name: MERN Stack CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16 # Use an appropriate version for your app
+
+      # Step 3: Install backend dependencies
+      - name: Install backend dependencies
+        working-directory: ./server
+        run: npm install
+
+      # Step 4: Run backend tests (if any)
+      - name: Run backend tests
+        working-directory: ./server
+        run: npm test
+
+      # Step 5: Build and install frontend dependencies
+      - name: Install frontend dependencies
+        working-directory: ./client
+        run: npm install
+
+      - name: Build frontend
+        working-directory: ./client
+        run: npm run build
+
+      # Step 6: Deploy frontend to Vercel
+      - name: Deploy frontend to Vercel
+        working-directory: ./client
+        run: npx vercel --prod
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      # Step 7: Deploy backend to a hosting platform (e.g., Render, AWS, or Heroku)
+      # - name: Deploy backend to Render (or other platform)
+      #   working-directory: ./backend
+      #   run: |
+      #     curl -X POST -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+      #     -d '{"serviceId": "your-service-id", "triggerName": "deploy"}' \
+      #     https://api.render.com/deploy
