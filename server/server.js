@@ -76,7 +76,7 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
 
 // Middleware
 app.use(cors({
-  origin: ['https://coder-nest.vercel.app','http://localhost:5173'], // Allow only requests from this origin
+  origin: ['*'.'https://coder-nest.vercel.app','http://localhost:5173'], // Allow only requests from this origin
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow these methods
   allowedHeaders: ['Content-Type', 'Authorization'], // Allow these headers
   credentials: true,
