@@ -52,6 +52,12 @@ const userSchema = new mongoose.Schema({
       highestRating: { type: Number, default: 0 },
       stars: { type: String, default: null },
       }, // CodeChef username
+    codeforces: {
+      username: { type: String, default: null },
+      rating: { type: Number, default: 0 },
+      maxRating: { type: Number, default: 0 },
+      rank: { type: String, default: null },
+      }, // CodeChef username
     gfg: { 
       username: { type: String, default: null },
       score: { type: Number, default: 0 },

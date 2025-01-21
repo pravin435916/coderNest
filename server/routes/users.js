@@ -6,6 +6,7 @@ import Post from '../models/posts.model.js';
 import nodemailer from 'nodemailer'; // For sending OTPs
 import { fetchLeetCodeStats } from '../utils/leetcodeUtils.js';
 import { fetchCodeChefStats } from '../utils/codechefUtils.js';
+import { fetchCodeforcesStats } from '../utils/codeforcesUtils.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'PRAV2004';
@@ -195,7 +196,7 @@ router.put('/update-profile', verifyToken, async (req, res) => {
     // Validate and update coding profiles
     if (codingProfiles !== undefined) {
       updatedFields.codingProfiles = {};
-      const allowedProfiles = ['leetcode', 'codechef', 'gfg', 'hackerrank'];
+      const allowedProfiles = ['leetcode', 'codechef', 'gfg', 'hackerrank','codeforces'];
        // Handle LeetCode
        if (codingProfiles.leetcode?.username) {
         console.log('Fetching LeetCode stats for:', codingProfiles.leetcode.username);
@@ -233,6 +234,26 @@ router.put('/update-profile', verifyToken, async (req, res) => {
         else {
           updatedFields.codingProfiles.codechef = {
             username: codingProfiles.codechef.username,
+          };
+        }
+      }
+      //codeforces
+      if (codingProfiles.codeforces?.username) {
+        const codeforcesStats = await fetchCodeforcesStats(codingProfiles.codeforces.username);
+        console.log('codeforcesStats: ', codeforcesStats);
+        
+        if (codeforcesStats) {
+          updatedFields.codingProfiles.codeforces = {
+            username: codingProfiles.codeforces.username,
+            rating: codeforcesStats.rating,
+            maxRating: codeforcesStats.maxRating,
+            rank: codeforcesStats.rank,
+          }
+        } 
+        else {
+          updatedFields.codingProfiles.codeforces = {
+            username: codingProfiles.codeforces.username,
+            rating: 0
           };
         }
       }
@@ -276,183 +297,116 @@ router.put('/update-profile', verifyToken, async (req, res) => {
 });
 
 
-
-// Follow a user
-// router.put('/follow/:id', async (req, res) => {
-//   try {
-//     const userId = req.body.userId; // ID of the logged-in user
-//     const followId = req.params.id; // ID of the user to follow
-//     console.log("user",userId)
-//     console.log(followId)
-
-//     if (userId === followId) {
-//       return res.status(400).json({ message: 'You cannot follow yourself.' });
-//     }
-
-//     const user = await User.findById(userId);
-//     const userToFollow = await User.findById(followId);
-
-//     if (!user || !userToFollow) {
-//       return res.status(404).json({ message: 'User not found.' });
-//     }
-
-//     if (!user.following.includes(followId)) {
-//       user.following.push(followId);
-//       userToFollow.followers.push(userId);
-//       await user.save();
-//       await userToFollow.save();
-//       return res.status(200).json({ message: 'Followed successfully.' });
-//     } else {
-//       return res.status(400).json({ message: 'Already following this user.' });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: 'Server error.' });
-//   }
-// });
-router.put('/follow/:id', async (req, res) => {
+router.post('/follow/:userId', verifyToken, async (req, res) => {
   try {
-    const userId = req.body.userId; // ID of the logged-in user
-    const followId = req.params.id; // ID of the user to follow
-
-    if (userId === followId) {
-      return res.status(400).json({ message: 'You cannot follow yourself.' });
+    if (req.userId === req.params.userId) {
+      return res.status(400).json({ message: 'You cannot follow yourself' });
     }
 
-    // Use $addToSet to prevent duplicate entries
-    const userUpdate = await User.findByIdAndUpdate(
-      userId,
-      { $addToSet: { following: followId } },
-      { new: true } // Return the updated document
-    );
+    const userToFollow = await User.findById(req.params.userId);
+    const currentUser = await User.findById(req.userId);
 
-    const followUserUpdate = await User.findByIdAndUpdate(
-      followId,
-      { $addToSet: { followers: userId } },
-      { new: true }
-    );
-
-    if (!userUpdate || !followUserUpdate) {
-      return res.status(404).json({ message: 'User not found.' });
+    if (!userToFollow || !currentUser) {
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    // Emit a real-time notification to the followed user (if using Socket.IO)
-    if (req.io) {
-      req.io.emit('followNotification', {
-        userId: followId,
-        message: `${userUpdate.name} started following you.`,
-      });
+    // Check if already following
+    if (currentUser.following.includes(req.params.userId)) {
+      return res.status(400).json({ message: 'You are already following this user' });
     }
 
-    return res.status(200).json({
-      message: 'Followed successfully.',
-      user: userUpdate,
-      followedUser: followUserUpdate,
+    // Add to following and followers lists
+    await User.findByIdAndUpdate(req.userId, {
+      $push: { following: req.params.userId }
     });
+
+    await User.findByIdAndUpdate(req.params.userId, {
+      $push: { followers: req.userId }
+    });
+
+    // Send real-time notification using Socket.IO
+    const notification = {
+      type: 'follow',
+      message: `${currentUser.name} started following you`,
+      from: req.userId,
+      to: req.params.userId,
+      timestamp: new Date()
+    };
+
+    // If user is connected, emit the notification
+    if (req.io) {
+      req.io.to(req.params.userId).emit('notification', notification);
+    }
+
+    res.json({ message: 'Successfully followed user' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error.' });
+    res.status(500).json({ message: 'Server Error' });
   }
 });
 
 // Unfollow a user
-router.put('/unfollow/:id', async (req, res) => {
+router.post('/unfollow/:userId', verifyToken, async (req, res) => {
   try {
-    const userId = req.body.userId; // ID of the logged-in user
-    const unfollowId = req.params.id; // ID of the user to unfollow
-
-    if (userId === unfollowId) {
-      return res.status(400).json({ message: 'You cannot unfollow yourself.' });
+    if (req.userId === req.params.userId) {
+      return res.status(400).json({ message: 'You cannot unfollow yourself' });
     }
 
-    // Remove the unfollowed user from the following list of the logged-in user
-    const userUpdate = await User.findByIdAndUpdate(
-      userId,
-      { $pull: { following: unfollowId } },
-      { new: true } // Return the updated document
-    );
+    const userToUnfollow = await User.findById(req.params.userId);
+    const currentUser = await User.findById(req.userId);
 
-    // Remove the logged-in user from the followers list of the user being unfollowed
-    const unfollowUserUpdate = await User.findByIdAndUpdate(
-      unfollowId,
-      { $pull: { followers: userId } },
-      { new: true }
-    );
-
-    if (!userUpdate || !unfollowUserUpdate) {
-      return res.status(404).json({ message: 'User not found.' });
+    if (!userToUnfollow || !currentUser) {
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    // Emit a real-time notification to the user who was unfollowed (optional)
-    if (req.io) {
-      req.io.emit('unfollowNotification', {
-        userId: unfollowId,
-        message: `${userUpdate.name} unfollowed you.`,
-      });
+    // Check if not following
+    if (!currentUser.following.includes(req.params.userId)) {
+      return res.status(400).json({ message: 'You are not following this user' });
     }
 
-    return res.status(200).json({
-      message: 'Unfollowed successfully.',
-      user: userUpdate,
-      unfollowedUser: unfollowUserUpdate,
+    // Remove from following and followers lists
+    await User.findByIdAndUpdate(req.userId, {
+      $pull: { following: req.params.userId }
     });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error.' });
-  }
-});
 
-// Check if current user follows a target user
-router.get('/follow-status/:targetUserId', async (req, res) => {
-  try {
-    const userId = req.query.userId; // Get the current user ID from query parameters
-    const targetUserId = req.params.targetUserId; // Get the target user ID from the URL params
-
-    if (!userId || !targetUserId) {
-      return res.status(400).json({ message: 'User IDs are required.' });
-    }
-
-    // Fetch the current user and check if they are following the target user
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.' });
-    }
-
-    const isFollowing = user.following.includes(targetUserId);
-
-    return res.status(200).json({ isFollowing });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error.' });
-  }
-});
-
-router.get('/followed', async (req, res) => {
-  try {
-    const userId = req.user._id; // Assuming user is authenticated
-    const user = await User.findById(userId).populate('following');
-    res.json({ followedUsers: user.following });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Server Error');
-  }
-});
-
-
-// Get followers and following
-router.get('/:id/followers-following', async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id).populate('followers following', 'name email');
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.' });
-    }
-    res.status(200).json({
-      followers: user.followers,
-      following: user.following,
+    await User.findByIdAndUpdate(req.params.userId, {
+      $pull: { followers: req.userId }
     });
+
+    res.json({ message: 'Successfully unfollowed user' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error.' });
+    res.status(500).json({ message: 'Server Error' });
   }
 });
+
+// Get user's followers
+router.get('/followers', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).populate('followers', 'name image');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ followers: user.followers });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// Get user's following
+router.get('/following', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).populate('following', 'name image');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ following: user.following });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+
 export default router;

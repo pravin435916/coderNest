@@ -17,19 +17,21 @@ import {
   SiLeetcode,
   SiCodechef,
   SiGeeksforgeeks,
-  SiHackerrank
+  SiHackerrank,
+  SiCodeforces
 } from 'react-icons/si';
 import ProfileCard from './ProfileCard';
 import EditProfileModal from './EditProfileModal';
 import { StatsCard, ContestRatingChart, PlatformStats } from './DashboardComponents';
 import axios from 'axios';
+import RatingCharts from './RatingCharts';
 
 const Profile = () => {
   const { user, posts, fetchUserInfo, fetchUserPosts, updateProfile, loading } = useUserStore();
   const [isEditing, setIsEditing] = useState(false);
   const [showCard, setShowCard] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
+ 
   // Initial state for edit form
   const [editData, setEditData] = useState({
     name: '',
@@ -43,6 +45,12 @@ const Profile = () => {
         highestRating: 0,
         stars: ''
       },
+      codeforces: {
+        username: '',
+        rating: 0,
+        maxRating: 0,
+        rank: ''
+      },
       gfg: { username: '', score: 0 },
       hackerrank: { username: '', score: 0 }
     }
@@ -50,7 +58,8 @@ const Profile = () => {
 
   const [contestRatings, setContestRatings] = useState([]);
   const [isLoadingRatings, setIsLoadingRatings] = useState(false);
-
+  const [codeforcesData, setCodeforcesData] = useState(null);
+  const [gfgData, setGfgData] = useState(null);
   const fetchCodechefRatings = async (username) => {
     try {
       setIsLoadingRatings(true);
@@ -64,30 +73,83 @@ const Profile = () => {
       setIsLoadingRatings(false);
     }
   };
-  console.log(contestRatings)
-
-  // Add this to your useEffect where you fetch user data
-  useEffect(() => {
-    if (user?.codingProfiles?.codechef?.username) {
-      fetchCodechefRatings(user.codingProfiles.codechef.username);
+  const fetchCodeforcesData = async (username) => {
+    try {
+      setIsLoadingRatings(true);
+      const token = localStorage.getItem('token');
+      const config = {
+        method: 'GET',
+        url: `https://codeforces.com/api/user.status?handle=${username}&from=1`,
+        headers: {
+          Accept: 'application/json',
+          // Add Authorization header only if required
+          Authorization: `Bearer ${token}`,
+        },
+      };
+  
+      console.log('Request Config:', config);
+  
+      const response = await axios(config);
+  
+      if (response.data && response.data.result) {
+        const data = response.data.result;
+  
+        if (data.length > 0) {
+          setCodeforcesData(data[0]);
+          console.log(data[0]);
+        } else {
+          console.warn('No data found for this user.');
+        }
+      } else {
+        console.error('Unexpected API response format:', response.data);
+      }
+    } catch (error) {
+      if (error.response) {
+        console.error('API error:', error.response.status, error.response.data);
+      } else if (error.request) {
+        console.error('No response received:', error.request);
+        console.warn('Possible network issue or CORS restriction.');
+      } else {
+        console.error('Error:', error.message);
+      }
+    } finally {
+      setIsLoadingRatings(false);
     }
-  }, [user?.codingProfiles?.codechef?.username]);
-
+  };
+  
+  
+  
+  // Update your useEffect
+  useEffect(() => {
+    if (user) {
+      if (user.codingProfiles?.codechef?.username) {
+        fetchCodechefRatings(user.codingProfiles.codechef.username);
+      }
+      if (user.codingProfiles?.codeforces?.username) {
+        fetchCodeforcesData(user.codingProfiles.codeforces.username);
+      }
+      // Add GFG fetch when API is available
+    }
+  }, [user?.codingProfiles]);
+  
+  // console.log(contestRatings)
+  
   // Calculate total statistics
   const calculateTotalStats = () => {
     const leetcodeScore = user?.codingProfiles?.leetcode?.score || 0;
     const codechefRating = user?.codingProfiles?.codechef?.currentRating || 0;
+    const codeforcesRating = user?.codingProfiles?.codechef?.rating || 0;
     const gfgScore = user?.codingProfiles?.gfg?.score || 0;
     const hackerrankScore = user?.codingProfiles?.hackerrank?.score || 0;
 
     return {
-      totalScore: leetcodeScore + codechefRating + gfgScore + hackerrankScore,
+      totalScore: leetcodeScore + codechefRating +codeforcesRating+ gfgScore + hackerrankScore,
       totalSolved: user?.codingProfiles?.leetcode?.totalSolved || 0,
       contestsParticipated: user?.codingProfiles?.codechef?.contestsParticipated || 0,
       contributions: posts?.length || 0
     };
   };
-
+  
   // Handle form changes
   const handleEditChange = (e) => {
     const { name, value } = e.target;
@@ -110,7 +172,7 @@ const Profile = () => {
       }));
     }
   };
-
+  
   // Handle profile update
   const handleSave = async () => {
     try {
@@ -123,7 +185,7 @@ const Profile = () => {
       console.error(error);
     }
   };
-
+  
   // Refresh stats
   const handleRefreshStats = async () => {
     try {
@@ -156,6 +218,12 @@ const Profile = () => {
             highestRating: user.codingProfiles?.codechef?.highestRating || 0,
             stars: user.codingProfiles?.codechef?.stars || ''
           },
+          codeforces: {
+            username: user.codingProfiles?.codeforces?.username || '',
+            rating: user.codingProfiles?.codeforces?.rating || 0,
+            maxRating: user.codingProfiles?.codeforces?.maxRating || 0,
+            rank: user.codingProfiles?.codeforces?.rank || ''
+          },
           gfg: {
             username: user.codingProfiles?.gfg?.username || '',
             score: user.codingProfiles?.gfg?.score || 0
@@ -177,59 +245,65 @@ const Profile = () => {
 
   const totalStats = calculateTotalStats();
 
+  console.log(user);
+
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-          <div className="flex flex-col sm:flex-row items-center gap-2">
-            <div className="relative">
-              <img
-                className="w-24 h-24 rounded-full border-4 border-indigo-50"
-                src={`https://github.com/shadcn.png`}
-                alt="Profile"
-              />
-              <button
-                onClick={() => setIsEditing(true)}
-                className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-md hover:bg-gray-50 transition-colors"
-              >
-                <FaPencilAlt className="text-gray-600" />
-              </button>
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">{user?.name}</h1>
-              <p className="text-gray-600">{user?.email}</p>
-              <p className="text-gray-500 mt-1">{user?.bio}</p>
-              <div className="flex items-center sm:gap-4 gap-0  mt-2 text-sm text-gray-500">
-                <span className="flex items-center gap-1">
-                  <FaRegCalendarAlt />
-                  Joined {moment(user?.createdAt).format('MMMM YYYY')}
-                </span>
-                <span className="flex items-center gap-1">
-                  <FaCode />
-                  {posts?.length} Projects
-                </span>
+         {/* Header Section */}
+          <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="relative">
+                <img
+            className="w-24 h-24 rounded-full border-4 border-indigo-50"
+            src={`https://github.com/shadcn.png`}
+            alt="Profile"
+                />
                 <button
-                  onClick={handleRefreshStats}
-                  className={`flex items-center gap-1 text-indigo-600 hover:text-indigo-700 ${isRefreshing ? 'animate-spin' : ''}`}
-                  disabled={isRefreshing}
+            onClick={() => setIsEditing(true)}
+            className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-md hover:bg-gray-50 transition-colors"
                 >
-                  <FaSync />
-                  Refresh Stats
+            <FaPencilAlt className="text-gray-600" />
                 </button>
               </div>
-            </div>
+              <div className="flex-1">
+                <h1 className="text-2xl font-bold text-gray-800">{user?.name}</h1>
+                <p className="text-gray-600">{user?.email}</p>
+                <p className="text-gray-500 mt-1">{user?.bio}</p>
+                <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
+            <span className="flex items-center gap-1">
+              <FaRegCalendarAlt />
+              Joined {moment(user?.createdAt).format('MMMM YYYY')}
+            </span>
+            <span className="flex items-center gap-1">
+              <FaCode />
+              {posts?.length} Projects
+            </span>
             <button
-              onClick={() => setShowCard(true)}
-              className="mr-4 px-6 py-3 bg-indigo-600 text-white rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors"
+              onClick={handleRefreshStats}
+              className={`flex items-center gap-1 text-indigo-600 hover:text-indigo-700 ${isRefreshing ? 'animate-spin' : ''}`}
+              disabled={isRefreshing}
             >
-              <FaLaptopCode className="text-xl" />
-              Generate Card
+              <FaSync />
+              Refresh Stats
             </button>
+                </div>
+                <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
+            <span>Followers: {user?.followers.length}</span>
+            <span>Following: {user?.following.length}</span>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowCard(true)}
+                className="px-6 py-3 bg-indigo-600 text-white rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors"
+              >
+                <FaLaptopCode className="text-xl" />
+                Generate Card
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Stats Grid */}
+          {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           <StatsCard
             title="Total Score"
@@ -280,6 +354,16 @@ const Profile = () => {
               color="#5B4638"
             />
             <PlatformStats
+              platform="codeforces"
+              stats={{
+                Rating: user?.codingProfiles?.codeforces?.rating || 0,
+                'Highest Rating': user?.codingProfiles?.codeforces?.maxRating || 0,
+                rank: user?.codingProfiles?.codeforces?.rank || 'N/A'
+              }}
+              icon={SiCodeforces}
+              color="#1F8ACB"
+            />
+            <PlatformStats
               platform="GeeksforGeeks"
               stats={{
                 Score: user?.codingProfiles?.gfg?.score || 0
@@ -299,8 +383,12 @@ const Profile = () => {
 
           {/* Contest Ratings and Posts */}
           <div className="lg:col-span-2 space-y-6">
-            {contestRatings.length > 0 ? (
-              <ContestRatingChart data={contestRatings} />
+            {(contestRatings.length > 0 || codeforcesData || gfgData) ? (
+              <RatingCharts
+                codechefData={contestRatings}
+                codeforcesData={codeforcesData}
+                gfgData={gfgData}
+              />
             ) : (
               <div className="bg-white p-6 rounded-xl shadow-md">
                 <h3 className="text-lg font-semibold mb-4">Contest Ratings</h3>
@@ -309,7 +397,7 @@ const Profile = () => {
                 </p>
               </div>
             )}
-            
+
             {/* Posts Grid */}
             <div className="bg-white p-6 rounded-xl shadow-md">
               <h3 className="text-lg font-semibold mb-4">Recent Posts</h3>
@@ -319,11 +407,20 @@ const Profile = () => {
                     key={post._id}
                     className="bg-gray-50 rounded-lg p-4"
                   >
-                    <img
+                    {
+                      post?.imageUrl && (
+                        <img
+                          className="w-full  h-44 object-cover rounded-lg mb-3"
+                          src={post?.imageUrl}
+                          alt="Post"
+                        />
+                      )
+                    }
+                    {/* <img
                       className="w-full h-44 object-cover rounded-lg mb-3"
                       src={post?.imageUrl}
                       alt="Post"
-                    />
+                    /> */}
                     <p className="text-sm font-medium text-gray-800 mb-2">{post.content}</p>
                     <div className="flex justify-between items-center text-sm text-gray-500">
                       <span>{moment(post.createdAt).fromNow()}</span>

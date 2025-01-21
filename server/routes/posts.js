@@ -41,29 +41,46 @@ const upload = multer({ storage: storage });
 
 router.post('/create', upload.single('imageUrl'), async (req, res) => {
   try {
-    const { content, createdAt, createdBy } = req.body;
+    // Log the incoming data to debug
+    console.log('Request body:', req.body);
+    console.log('Request file:', req.file);
 
-    // Check if an image file was uploaded (optional)
-    let imageUrl = '';
+    // Create the base postData object
+    const postData = {
+      createdAt: req.body.createdAt,
+      createdBy: req.body.createdBy,
+      content: req.body.content || '',  // Set default empty string if not provided
+      code: req.body.code || ''         // Set default empty string if not provided
+    };
+
+    // Handle image upload if present
     if (req.file && req.file.path) {
-      const uploadedFile = req.file.path;
-      const uploadResult = await cloudinary.uploader.upload(uploadedFile);
-      console.log('Upload successful:', uploadResult);
-      fs.unlinkSync(uploadedFile);  // Clean up the local file
-      imageUrl = uploadResult.secure_url;
+      try {
+        const uploadResult = await cloudinary.uploader.upload(req.file.path);
+        postData.imageUrl = uploadResult.secure_url;
+        fs.unlinkSync(req.file.path);
+      } catch (uploadError) {
+        console.error('Error uploading to cloudinary:', uploadError);
+        return res.status(400).json({ message: 'Image upload failed' });
+      }
     }
 
-    const post = await Post.create({
-      content,
-      createdAt,
-      imageUrl,
-      createdBy
+    // Create the post
+    const post = await Post.create(postData);
+
+    // Send response with created post
+    res.status(201).json({
+      success: true,
+      data: post
     });
-     console.log(imageUrl)
-    res.json(post);
+
   } catch (error) {
     console.error('Error creating post:', error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({
+      success: false,
+      message: 'Error creating post',
+      error: error.message
+    });
   }
 });
 

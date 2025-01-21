@@ -1,7 +1,7 @@
 // EditProfileModal.jsx
 import React from 'react';
 import { FaTimes, FaUser, FaEnvelope, FaInfoCircle, FaCode } from 'react-icons/fa';
-import { SiLeetcode, SiCodechef, SiGeeksforgeeks, SiHackerrank } from 'react-icons/si';
+import { SiLeetcode, SiCodechef,SiCodeforces, SiGeeksforgeeks, SiHackerrank } from 'react-icons/si';
 
 const InputField = ({ icon: Icon, label, ...props }) => (
   <div>
@@ -108,6 +108,15 @@ const EditProfileModal = ({ editData, onClose, onSave,loading, onChange }) => {
                 value={editData.codingProfiles.codechef.username}
                 onChange={onChange}
                 placeholder="Enter CodeChef username"
+              />
+              <InputField
+                icon={SiCodeforces}
+                label="Codeforces Username"
+                type="text"
+                name="codingProfiles.codeforces.username"
+                value={editData.codingProfiles.codeforces.username}
+                onChange={onChange}
+                placeholder="Enter codeforces username"
               />
 
               <InputField

@@ -14,9 +14,10 @@ import { backendApi } from '../Url';
 export const Home = () => {
   const user = useContext(UserContext);
   const [inputText, setInputText] = useState('');
+  const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
-  const [posts, setPosts] = useState('');
+  const [posts, setPosts] = useState([]);
   const [highlightedCode, setHighlightedCode] = useState('');
 
   const handleImageChange = (event) => {
@@ -25,28 +26,25 @@ export const Home = () => {
   };
 
   const handleCodeInput = (e) => {
-    const text = e.target.value;
-    setInputText(text);
+    const texts = e.target.value;
+    setCode(texts);
 
     // Dynamically highlight the input code
-    const highlighted = Prism.highlight(text, Prism.languages.javascript, 'javascript');
+    const highlighted = Prism.highlight(code, Prism.languages.javascript, 'javascript');
     setHighlightedCode(highlighted);
   };
 
   const getAllPosts = async () => {
     try {
-      setLoading(true);
       const res = await axios.get(`${backendApi}/api/post/get`);
       setPosts(res.data);
     } catch (error) {
       console.error('Error fetching posts:', error);
-    } finally {
-      setLoading(false);
     }
   };
-   useEffect(() => {
-      getAllPosts();
-    }, []);
+  useEffect(() => {
+    getAllPosts();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,6 +56,7 @@ export const Home = () => {
 
     const formData = new FormData();
     formData.append('content', inputText);
+    formData.append('code', code);
     formData.append('imageUrl', imageFile);
     formData.append('createdAt', Date.now().toString());
     formData.append('createdBy', user._id);
@@ -72,6 +71,7 @@ export const Home = () => {
       getAllPosts()
       setPosts((prevPosts) => [res.data.newPost, ...prevPosts]);
       setInputText('');
+      setCode('')
       setImageFile(null);
       setHighlightedCode('');
     } catch (error) {
@@ -88,18 +88,25 @@ export const Home = () => {
       {user && (
         <div className="w-full flex flex-col bg-gray-100 py-2 px-6 my-4 rounded-3xl">
           <span className="font-bold">Create Post</span>
-          <textarea
+          <input
             value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            className="w-full p-2 rounded-2xl outline-none border-none mb-2"
+            type="text"
+            placeholder="What's new ..."
+          />
+          <textarea
+            value={code}
             onChange={handleCodeInput}
             className="w-full p-2 rounded-2xl h-20 outline-none border-none"
-            placeholder="What's new or share code..."
+            placeholder="share code..."
           />
           {
-            inputText.length > 0 &&
-          <pre
-            className="language-javascript p-4 bg-gray-900 text-white rounded-lg mt-2 overflow-x-auto"
-            dangerouslySetInnerHTML={{ __html: highlightedCode }}
-          />
+            code.length > 0 &&
+            <pre
+              className="language-javascript p-4 bg-gray-900 text-white rounded-lg mt-2 overflow-x-auto"
+              dangerouslySetInnerHTML={{ __html: highlightedCode }}
+            />
           }
           <div className="flex items-center sm:gap-4 gap-2 sm:p-2 mt-2">
             {imageFile ? (
@@ -124,11 +131,11 @@ export const Home = () => {
               </span>
               <span>Video</span>
               <input
-                  type="file"
-                  onChange={handleImageChange}
-                  accept="video/*"
-                  className="file-input opacity-0 absolute inset-0 w-full h-full cursor-pointer"
-                />
+                type="file"
+                onChange={handleImageChange}
+                accept="video/*"
+                className="file-input opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+              />
             </div>
             <button
               onClick={handleSubmit}
