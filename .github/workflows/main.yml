@@ -1,4 +1,4 @@
-name: MERN Stack CI/CD
+name: Coder Nest
 
 on:
   push:
@@ -30,26 +30,35 @@ jobs:
         working-directory: ./server
         run: npm test
 
-      # Step 5: Build and install frontend dependencies
+      # Step 5: Install frontend dependencies
       - name: Install frontend dependencies
         working-directory: ./client
         run: npm install
 
+      # Step 6: Build frontend
       - name: Build frontend
         working-directory: ./client
         run: npm run build
 
-      # Step 6: Deploy frontend to Vercel
+      # Step 7: Deploy frontend to Vercel
       - name: Deploy frontend to Vercel
         working-directory: ./client
         run: npx vercel --prod
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
-      # Step 7: Deploy backend to a hosting platform (e.g., Render, AWS, or Heroku)
-      # - name: Deploy backend to Render (or other platform)
-      #   working-directory: ./backend
+      # Step 8: Deploy backend to a hosting platform (e.g., Render, AWS, or Heroku)
+      # Replace this with the appropriate deployment command for your backend
+      - name: Deploy backend to Vercel (if using Vercel for backend)
+        working-directory: ./server
+        run: npx vercel --prod
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      # If deploying to AWS, Render, or Heroku, use the appropriate deployment step:
+      # - name: Deploy backend to Heroku
       #   run: |
-      #     curl -X POST -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-      #     -d '{"serviceId": "your-service-id", "triggerName": "deploy"}' \
-      #     https://api.render.com/deploy
+      #     git remote add heroku https://git.heroku.com/your-heroku-app.git
+      #     git push heroku main
+      #   env:
+      #     HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
