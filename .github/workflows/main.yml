@@ -1,4 +1,4 @@
-name: MERN Stack CI/CD
+name: Coder Nest
 
 on:
   push:
@@ -18,38 +18,39 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 16 # Use an appropriate version for your app
+          node-version: '18'
 
       # Step 3: Install backend dependencies
       - name: Install backend dependencies
         working-directory: ./server
         run: npm install
 
-      # Step 4: Run backend tests (if any)
-      - name: Run backend tests
+      # Step 4: Run backend tests (conditionally skip if no test script)
+      - name: Run backend tests (if any)
         working-directory: ./server
-        run: npm test
+        run: |
+          if [ -f package.json ] && grep -q '"test"' package.json; then
+            npm test;
+          else
+            echo "No tests defined. Skipping step.";
+          fi
 
-      # Step 5: Build and install frontend dependencies
+      # Step 5: Install frontend dependencies
       - name: Install frontend dependencies
         working-directory: ./client
         run: npm install
 
+      # Step 6: Build frontend
       - name: Build frontend
         working-directory: ./client
         run: npm run build
 
-      # Step 6: Deploy frontend to Vercel
+      # Step 7: Deploy frontend to Vercel
       - name: Deploy frontend to Vercel
         working-directory: ./client
-        run: npx vercel --prod
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: npx vercel deploy --prod --token ${{ secrets.VERCEL_TOKEN }}
 
-      # Step 7: Deploy backend to a hosting platform (e.g., Render, AWS, or Heroku)
-      # - name: Deploy backend to Render (or other platform)
-      #   working-directory: ./backend
-      #   run: |
-      #     curl -X POST -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-      #     -d '{"serviceId": "your-service-id", "triggerName": "deploy"}' \
-      #     https://api.render.com/deploy
+      # Step 8: Deploy backend to Vercel
+      - name: Deploy backend to Vercel
+        working-directory: ./server
+        run: npx vercel deploy --prod --token ${{ secrets.VERCEL_TOKEN }}
