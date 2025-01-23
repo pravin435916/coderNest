@@ -6,10 +6,10 @@ import RightSideBar from './RightSideBar';
 import LeftSideBar from './LeftSideBar';
 const Hero= () => {
   return (
-    <div className="flex flex-col sm:flex-row sm:h-[90vh]">
+    <div className="flex flex-col sm:flex-row sm:h-[90vh] overflow-hidden">
       <LeftSideBar/>
       <Home/>
-      <RightSideBar/>
+      <RightSideBar/> 
     </div>
   );
 }

@@ -11,11 +11,15 @@ export const PostContent = ({ content,code }) => {
     <>
 
     <span>{content}</span>
-    <pre className="language-javascript mt-2 rounded-md p-4 bg-gray-800 text-white">
-      <code className="language-javascript">
-        {code}
-      </code>
-    </pre>
+    {
+      code && (
+        <pre className="language-javascript mt-2 rounded-md p-4 bg-gray-800 text-white">
+          <code className="language-javascript">
+            {code}
+          </code>
+        </pre>
+      )
+    }
     </>
   );
 };

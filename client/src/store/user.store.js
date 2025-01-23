@@ -68,7 +68,20 @@ const useUserStore = create((set, get) => ({
       set({ error: error.response?.data.message || error.message, loading: false });
     }
   },
+  
+  //fetch all users
+  fetchAllUsers: async () => {
+    set({ loading: true, error: null });
+    try {
+      get().setAuthHeader();
+      const response = await axios.get(`${backendApi}/api/users/all-users`);
+      set({ users: response.data.users, loading: false });
+      console.log('users: ', users);
 
+    } catch (error) {
+      set({ error: error.response?.data.message || error.message, loading: false });
+    }
+  },
   // Fetch User Posts
   fetchUserPosts: async () => {
     set({ loading: true, error: null });

@@ -77,6 +77,12 @@ export const LeftSideBar = () => {
               isActive={location.pathname === '/'}
             />
             <NavItem 
+              to="/leaderboard" 
+              icon={MdOutlineHome} 
+              label="LeaderBoard"
+              isActive={location.pathname === '/leaderboard'}
+            />
+            <NavItem 
               to="/notify" 
               icon={FaBell} 
               label="Notification"
@@ -111,7 +117,7 @@ export const LeftSideBar = () => {
 
           {/* User Profile Section - Fixed at Bottom */}
           {user && (
-            <div className="pt-4 border-t border-gray-100 mt-4">
+            <div className="pt-4 border-t border-gray-100 ">
               <div className="flex items-center gap-3 p-2">
                 <img
                   src={user.image || 'https://github.com/shadcn.png'}

@@ -74,6 +74,7 @@ router.post('/login', async (req, res) => {
 
     // Generate OTP for MFA
     const otp = Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
+    console.log('otp: ', otp);
     user.otp = otp;
     const otpExpirationTime = Date.now() + OTP_EXPIRATION_TIME;
     console.log('OTP Expiration Time (Generated):', otpExpirationTime); // Log the expiration time
@@ -81,8 +82,7 @@ router.post('/login', async (req, res) => {
 
     // Save OTP and expiration time to the user model
     await user.save();
-
-    await sendOTPEmail(user.email, otp);
+    // await sendOTPEmail(user.email, otp);
     res.json({ message: 'OTP sent to your email for verification' });
   } catch (error) {
     console.error(error);
@@ -134,6 +134,18 @@ const verifyToken = (req, res, next) => {
   }
 };
 
+
+//get all users info 
+
+router.get('/all-users', async (req, res) => {
+  try {
+    const users = await User.find().select('-password');
+    res.json({ users });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
 // Get user posts
 router.get('/user-posts', verifyToken, async (req, res) => {
   try {

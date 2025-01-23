@@ -10,14 +10,15 @@ import { CiImageOn } from "react-icons/ci";
 import { UserContext } from '../context/UserProvider';
 import { Posts } from './Posts';
 import { backendApi } from '../Url';
+import usePostStore from '../store/post.store';
 
 export const Home = () => {
   const user = useContext(UserContext);
+  const {posts,fetchPosts,createPost} = usePostStore();
   const [inputText, setInputText] = useState('');
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
-  const [posts, setPosts] = useState([]);
   const [highlightedCode, setHighlightedCode] = useState('');
 
   const handleImageChange = (event) => {
@@ -34,18 +35,6 @@ export const Home = () => {
     setHighlightedCode(highlighted);
   };
 
-  const getAllPosts = async () => {
-    try {
-      const res = await axios.get(`${backendApi}/api/post/get`);
-      setPosts(res.data);
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-    }
-  };
-  useEffect(() => {
-    getAllPosts();
-  }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!imageFile && !inputText) {
@@ -60,16 +49,15 @@ export const Home = () => {
     formData.append('imageUrl', imageFile);
     formData.append('createdAt', Date.now().toString());
     formData.append('createdBy', user._id);
+    const hashtags = inputText.match(/#[a-z0-9_]+/gi) || [];
+    console.log('hashtags: ', hashtags);
+    formData.append('hashtags', hashtags);
 
     try {
-      const res = await axios.post(`${backendApi}/api/post/create`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const res = await createPost(formData, imageFile);
+      console.log(res);
       toast.success('Published successfully');
-      getAllPosts()
-      setPosts((prevPosts) => [res.data.newPost, ...prevPosts]);
+      fetchPosts()
       setInputText('');
       setCode('')
       setImageFile(null);

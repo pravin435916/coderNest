@@ -14,6 +14,7 @@ const postSchema = new mongoose.Schema(
       ref: "User",
     },
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    hashtags: [{ type: String }],
   },
   { timestamps: true }
 );

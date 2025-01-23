@@ -14,6 +14,7 @@
     "axios": "^1.7.2",
     "framer-motion": "^11.2.10",
     "html2canvas": "^1.4.1",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.468.0",
     "moment": "^2.30.1",
     "prismjs": "^1.29.0",

@@ -15,7 +15,7 @@ export const Posts = () => {
   const [editContent, setEditContent] = useState('');
   const [editImage, setEditImage] = useState(null);
   const { user, fetchUserInfo } = useUserStore();
-  const { posts, fetchPosts, deletePost, likePost, loading } = usePostStore();
+  const { posts, fetchPosts,editPost, deletePost, likePost, loading } = usePostStore();
   const [followedUsers, setFollowedUsers] = useState([]);
 
   useEffect(() => {
@@ -23,6 +23,8 @@ export const Posts = () => {
     fetchUserInfo();
     fetchFollowedUsers();
   }, []);
+
+  console.log('posts:', posts);
 
   // Fetch followed users on component mount
   const fetchFollowedUsers = async () => {
@@ -114,19 +116,21 @@ export const Posts = () => {
       }
 
       const token = localStorage.getItem('token');
-      const res = await axios.put(
-        `${backendApi}/api/post/edit/${editingPostId}`, 
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${token}`
-          },
-        }
-      );
+      await editPost(editingPostId, formData, editImage);
+      // const res = await axios.put(
+      //   `${backendApi}/api/post/edit/${editingPostId}`, 
+      //   formData,
+      //   {
+      //     headers: {
+      //       'Content-Type': 'multipart/form-data',
+      //       Authorization: `Bearer ${token}`
+      //     },
+      //   }
+      // );
 
       toast.success('Post edited successfully');
       fetchPosts(); // Refresh posts after edit
+      
       setEditingPostId(null);
       setEditContent('');
       setEditImage(null);
@@ -140,7 +144,7 @@ export const Posts = () => {
   };
 
   return (
-    <div>
+    <>
       <div className='flex gap-2 items-center my-2'>
         <span className='text-3xl text-orange-600'><FaFire /></span>
         <h2 className="text-2xl font-bold abel-regular">SocialNest Feed</h2>
@@ -215,6 +219,11 @@ export const Posts = () => {
                     alt="" 
                   />
                 )}
+                {
+                   post?.hashtags && post?.hashtags.map((tag, index) => (
+                    <span key={index} className="text-blue-500">{tag}</span>
+                  ))
+                }
                 <div className="flex justify-between sm:justify-start gap-4 mt-4">
                   <div 
                     className="flex gap-1 items-center cursor-pointer" 
@@ -250,6 +259,6 @@ export const Posts = () => {
           </div>
         ))
       )}
-    </div>
+    </>
   );
 };

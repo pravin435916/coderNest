@@ -50,7 +50,8 @@ router.post('/create', upload.single('imageUrl'), async (req, res) => {
       createdAt: req.body.createdAt,
       createdBy: req.body.createdBy,
       content: req.body.content || '',  // Set default empty string if not provided
-      code: req.body.code || ''         // Set default empty string if not provided
+      code: req.body.code || '',         // Set default empty string if not provided
+      hashtags: req.body.hashtags || []  // Set default empty array if not provided
     };
 
     // Handle image upload if present

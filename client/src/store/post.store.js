@@ -22,28 +22,12 @@ const usePostStore = create((set, get) => ({
   },
 
   // Create a new post
-  createPost: async (postData, imageFile) => {
+  createPost: async (postData, imageFile=null) => {
     set({ loading: true, error: null });
     try {
-      const formData = new FormData();
-      
-      // Append fields to FormData only if they are provided
-      if (postData.content) {
-        formData.append('content', postData.content);
-      }
-      if (postData.code) {
-        formData.append('code', postData.code);
-      }
-      formData.append('createdAt', postData.createdAt);
-      formData.append('createdBy', postData.createdBy);
-  
-      // Append image file if provided
-      if (imageFile) {
-        formData.append('imageUrl', imageFile);
-      }
-  
-      const response = await axios.post(`${backendApi}/api/post/create`, formData);
-      set({ posts: [response.data, ...get().posts], loading: false });
+      const response = await axios.post(`${backendApi}/api/post/create`, postData,imageFile);
+      console.log('response: ', response);
+      set({ posts: [response.data.data, ...get().posts], loading: false });
     } catch (error) {
       console.error('Error creating post:', error);
       set({ error: 'Error creating post', loading: false });
@@ -54,15 +38,7 @@ const usePostStore = create((set, get) => ({
   editPost: async (postId, updatedData, imageFile) => {
     set({ loading: true, error: null });
     try {
-      const formData = new FormData();
-      formData.append('content', updatedData.content);
-      formData.append('createdAt', updatedData.createdAt);
-      formData.append('createdBy', updatedData.createdBy);
-      if (imageFile) {
-        formData.append('imageUrl', imageFile);
-      }
-
-      const response = await axios.put(`${backendApi}/api/post/edit/${postId}`, formData);
+      const response = await axios.put(`${backendApi}/api/post/edit/${postId}`, updatedData,imageFile);
       set({
         posts: get().posts.map((post) => (post._id === postId ? response.data : post)),
         loading: false,
